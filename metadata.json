@@ -1,0 +1,8 @@
+{
+  "name": "Ranbeer Raja | Engineering Portfolio",
+  "description": "High-performance software engineering portfolio and technical management console.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
