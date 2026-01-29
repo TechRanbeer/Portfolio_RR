@@ -26,8 +26,12 @@ export interface Project {
   featured: boolean;
   status: 'published' | 'draft';
   createdAt: string;
+  // New AI Context Fields
+  aiContext?: string;
+  lastAiSync?: string;
 }
 
+// Fix: Added missing Blog interface which was causing multiple module errors
 export interface Blog {
   id: string;
   slug: string;
@@ -41,12 +45,30 @@ export interface Blog {
   status: 'published' | 'draft';
 }
 
-export interface AnalyticsData {
-  views: number;
-  aiQueries: number;
-  resumeDownloads: number;
-  conversionRate: number;
-  dailyStats: { date: string; views: number }[];
+export interface Certificate {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  category: string;
+  verificationUrl?: string;
+  imageUrl?: string;
+  status: 'published' | 'draft';
+}
+
+export interface AnalyticsEvent {
+  id: string;
+  eventType: 'PAGE_VIEW' | 'AI_QUERY' | 'RESUME_DOWNLOAD' | 'PROJECT_CLICK';
+  payload: any;
+  createdAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  action: string;
+  actor: string;
+  details: string;
+  timestamp: string;
 }
 
 export interface ChatMessage {

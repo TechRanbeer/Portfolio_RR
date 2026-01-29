@@ -51,7 +51,8 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
       parts: [{ text: m.content }]
     }));
 
-    const aiResponse = await geminiService.generatePortfolioResponse(input, history, projects, []);
+    // Fix: Pass 'blogs' from props instead of an empty array to resolve argument mismatch and provide context
+    const aiResponse = await geminiService.generatePortfolioResponse(input, history, projects, blogs);
 
     setMessages(prev => [...prev, {
       role: 'assistant',

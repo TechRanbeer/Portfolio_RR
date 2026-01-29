@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, Github, Linkedin, Mail, Instagram,
-  Briefcase, Sparkles, Settings, FileText, Award
+  Briefcase, Sparkles, Settings, FileText, Award, LogOut, Loader2
 } from 'lucide-react';
 
 // Components
@@ -13,24 +14,67 @@ import ProjectDetail from './pages/ProjectDetail';
 import ChatAssistant from './pages/ChatAssistant';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProjects from './pages/admin/AdminProjects';
+import AiInspector from './pages/admin/AiInspector';
 import BlogList from './pages/BlogList';
 import Resume from './pages/Resume';
 import Certificates from './pages/Certificates';
 import CloudBackground from './components/ui/CloudBackground';
 
-// Types & Services
-import { Project, Blog } from './types';
+// Services
+import { Project, Blog, Certificate } from './types';
 import { storageService } from './services/storageService';
+import { authService } from './services/authService';
 
 const App: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [projects, setProjects] = useState<Project[]>(storageService.getProjects());
-  const [blogs] = useState<Blog[]>(storageService.getBlogs());
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]); // Initialize blogs state
+  const [user, setUser] = useState<any>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const views = parseInt(localStorage.getItem('rr_total_views') || '0');
-    localStorage.setItem('rr_total_views', (views + 1).toString());
+    const initAuth = async () => {
+      // Safety timeout
+      const timeout = setTimeout(() => {
+        setIsAuthLoading(false);
+      }, 5000);
+
+      try {
+        const client = await authService.init();
+        if (client) {
+          const authenticated = await authService.isAuthenticated();
+          if (authenticated) {
+            const userData = await authService.getUser();
+            setUser(userData);
+          }
+        }
+      } catch (err) {
+        console.error("Auth initialization failed", err);
+      } finally {
+        clearTimeout(timeout);
+        setIsAuthLoading(false);
+      }
+    };
+
+    initAuth();
+
+    // Initial Data Load
+    const loadData = async () => {
+      try {
+        const p = await storageService.getProjects();
+        setProjects(p);
+        // Fix: Fetch blogs from storageService and update state to provide context for the AI Assistant
+        const b = await storageService.getBlogs();
+        setBlogs(b);
+      } catch (err) {
+        console.error("Data load failed", err);
+      }
+    };
+    loadData();
+    
+    // Analytics tracking
+    storageService.trackEvent('PAGE_VIEW', { path: location.pathname });
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
@@ -41,7 +85,23 @@ const App: React.FC = () => {
     { name: 'AI Assistant', path: '/chat', icon: <Sparkles size={18} /> },
   ];
 
-  const isAdminPath = location.pathname.startsWith('/admin');
+  const handleLogin = async () => {
+    try {
+      setIsAuthLoading(true);
+      await authService.login();
+    } catch (err) {
+      console.error("Login failed", err);
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-cyan-500/30 bg-slate-950">
@@ -58,58 +118,49 @@ const App: React.FC = () => {
               {navLinks.map((link) => (
                 <Link 
                   key={link.path} 
-                  to={link.path}
+                  to={link.path} 
                   className={`flex items-center space-x-2 text-sm font-medium transition-all hover:text-cyan-400 ${location.pathname === link.path ? 'text-cyan-400' : 'text-slate-400'}`}
                 >
                   {link.icon}
                   <span>{link.name}</span>
                 </Link>
               ))}
-              <Link to="/admin" className="p-2 text-slate-500 hover:text-cyan-400 transition-colors" title="Admin Control Center">
-                <Settings size={20} />
-              </Link>
-            </div>
-
-            <div className="md:hidden flex items-center">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-slate-400">
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
+              <div className="h-4 w-px bg-white/10 mx-2"></div>
+              
+              {/* Gear (Settings) / Auth Controls */}
+              {isAuthLoading ? (
+                <div className="p-2">
+                  <Loader2 size={20} className="animate-spin text-cyan-400" />
+                </div>
+              ) : user ? (
+                <div className="flex items-center space-x-2">
+                  <Link 
+                    to="/admin" 
+                    className={`p-2 transition-colors ${location.pathname.startsWith('/admin') ? 'text-cyan-400' : 'text-slate-400 hover:text-cyan-400'}`} 
+                    title="Admin Dashboard"
+                  >
+                    <Settings size={20} />
+                  </Link>
+                  <button 
+                    onClick={handleLogout} 
+                    className="p-2 text-slate-500 hover:text-red-400 transition-colors" 
+                    title="Logout"
+                  >
+                    <LogOut size={20} />
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={handleLogin} 
+                  className="p-2 text-slate-500 hover:text-cyan-400 transition-colors" 
+                  title="Admin Login"
+                >
+                  <Settings size={20} />
+                </button>
+              )}
             </div>
           </div>
         </div>
-
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-slate-900 border-b border-slate-800"
-            >
-              <div className="px-4 pt-2 pb-6 space-y-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 px-3 py-4 text-base font-medium text-slate-300 rounded-lg"
-                  >
-                    {link.icon}
-                    <span>{link.name}</span>
-                  </Link>
-                ))}
-                <Link
-                  to="/admin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-3 px-3 py-4 text-base font-medium text-slate-500 rounded-lg"
-                >
-                  <Settings size={18} />
-                  <span>Admin Console</span>
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </nav>
 
       <main className="flex-grow pt-16">
@@ -119,49 +170,43 @@ const App: React.FC = () => {
           <Route path="/projects/:slug" element={<ProjectDetail projects={projects} />} />
           <Route path="/resume" element={<Resume />} />
           <Route path="/certificates" element={<Certificates />} />
-          <Route path="/blog" element={<BlogList blogs={blogs} />} />
           <Route path="/chat" element={<ChatAssistant projects={projects} blogs={blogs} />} />
-          <Route path="/admin" element={<AdminDashboard projects={projects} />} />
-          <Route path="/admin/projects" element={<AdminProjects projects={projects} onUpdate={setProjects} />} />
+          
+          {/* Admin Protected Routes */}
+          <Route path="/admin/*" element={
+            isAuthLoading ? (
+              <div className="flex flex-col items-center justify-center h-[70vh]">
+                <Loader2 size={40} className="animate-spin text-cyan-500 mb-4" />
+                <p className="text-slate-500 font-mono text-sm">Validating Session...</p>
+              </div>
+            ) : user ? (
+              <Routes>
+                <Route index element={<AdminDashboard projects={projects} />} />
+                <Route path="projects" element={<AdminProjects projects={projects} onUpdate={setProjects} />} />
+                <Route path="ai-inspector" element={<AiInspector projects={projects} />} />
+              </Routes>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[70vh] p-8 text-center">
+                <div className="p-4 bg-red-500/10 rounded-full mb-6">
+                  <Settings size={48} className="text-red-500" />
+                </div>
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Access Denied</h2>
+                <p className="text-slate-400 max-w-md mb-8">This module is locked. Administrative credentials are required to modify the system registry.</p>
+                <button 
+                  onClick={handleLogin} 
+                  className="px-8 py-3 bg-cyan-600 text-white font-bold rounded-xl hover:bg-cyan-500 transition-all shadow-xl shadow-cyan-500/20"
+                >
+                  Authenticate Admin
+                </button>
+              </div>
+            )
+          } />
         </Routes>
       </main>
 
-      <footer className="bg-slate-950/80 backdrop-blur-md border-t border-white/5 py-12 relative z-10 no-print">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center mb-6">
-                <span className="text-xl font-bold text-white uppercase">Ranbeer Raja</span>
-              </div>
-              <p className="text-slate-400 max-w-sm mb-6">
-                Mechanical Engineer & Embedded Systems Specialist. Bridging the gap between hardware precision and intelligent software.
-              </p>
-              <div className="flex space-x-4">
-                <a href="https://github.com" target="_blank" rel="noreferrer" className="p-2 bg-slate-900 rounded-full hover:bg-slate-700 transition-colors"><Github size={20} /></a>
-                <a href="https://www.linkedin.com/in/ranbeer-raja-10626532a/" target="_blank" rel="noreferrer" className="p-2 bg-slate-900 rounded-full hover:bg-blue-600 transition-colors"><Linkedin size={20} /></a>
-                <a href="https://www.instagram.com/ranbe3r.24_/" target="_blank" rel="noreferrer" className="p-2 bg-slate-900 rounded-full hover:bg-pink-600 transition-colors"><Instagram size={20} /></a>
-                <a href="mailto:ranbeerraja1@gmail.com" className="p-2 bg-slate-900 rounded-full hover:bg-red-600 transition-colors"><Mail size={20} /></a>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Navigation</h3>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li><Link to="/projects" className="hover:text-cyan-400 transition-colors">Engineering Projects</Link></li>
-                <li><Link to="/resume" className="hover:text-cyan-400 transition-colors">Interactive Resume</Link></li>
-                <li><Link to="/certificates" className="hover:text-cyan-400 transition-colors">Certifications</Link></li>
-                <li><Link to="/chat" className="hover:text-cyan-400 transition-colors">AI Assistant</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Based in India</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Available for remote global opportunities in IoT, Embedded Systems, and Mechanical Design.
-              </p>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-white/5 text-center text-slate-500 text-xs">
-            &copy; {new Date().getFullYear()} Ranbeer Raja | KJ Somaiya College. All rights reserved.
-          </div>
+      <footer className="bg-slate-950/80 backdrop-blur-md border-t border-white/5 py-12 no-print">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500 text-xs">
+          &copy; {new Date().getFullYear()} Ranbeer Raja | KJ Somaiya College
         </div>
       </footer>
     </div>
