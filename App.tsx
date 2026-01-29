@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, Github, Linkedin, Mail, Instagram,
-  Briefcase, Sparkles, Settings, FileText, Award, LogOut, Loader2
+  Briefcase, Sparkles, Settings, FileText, Award, LogOut, Loader2, ShieldAlert
 } from 'lucide-react';
 
 // Components
@@ -21,62 +21,104 @@ import Certificates from './pages/Certificates';
 import CloudBackground from './components/ui/CloudBackground';
 
 // Services
-import { Project, Blog, Certificate } from './types';
+import { Project, Blog } from './types';
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
 
-const App: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [blogs, setBlogs] = useState<Blog[]>([]); // Initialize blogs state
-  const [user, setUser] = useState<any>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const location = useLocation();
-  const navigate = useNavigate();
+/**
+ * AdminGuard Component
+ * Strictly enforces production authentication via Auth0.
+ */
+const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [status, setStatus] = useState<'loading' | 'unauthorized' | 'authorized'>('loading');
 
   useEffect(() => {
-    const initAuth = async () => {
-      // Safety timeout
-      const timeout = setTimeout(() => {
-        setIsAuthLoading(false);
-      }, 5000);
-
-      try {
-        const client = await authService.init();
-        if (client) {
-          const authenticated = await authService.isAuthenticated();
-          if (authenticated) {
-            const userData = await authService.getUser();
-            setUser(userData);
-          }
-        }
-      } catch (err) {
-        console.error("Auth initialization failed", err);
-      } finally {
-        clearTimeout(timeout);
-        setIsAuthLoading(false);
+    const checkAccess = async () => {
+      const isConfigured = authService.isConfigured();
+      if (!isConfigured) {
+        setStatus('unauthorized');
+        return;
       }
+      
+      const authenticated = await authService.isAuthenticated();
+      if (!authenticated) {
+        await authService.login();
+        return;
+      }
+      
+      const admin = await authService.isAdmin();
+      setStatus(admin ? 'authorized' : 'unauthorized');
     };
+    checkAccess();
+  }, []);
 
-    initAuth();
+  if (status === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh]">
+        <Loader2 size={40} className="animate-spin text-cyan-500 mb-4" />
+        <p className="text-slate-500 font-mono text-sm tracking-widest uppercase text-center">Authenticating Secure Session...</p>
+      </div>
+    );
+  }
 
-    // Initial Data Load
-    const loadData = async () => {
+  if (status === 'unauthorized') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] p-8 text-center">
+        <div className="p-6 bg-red-500/10 rounded-full mb-8">
+          <ShieldAlert size={64} className="text-red-500" />
+        </div>
+        <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Access Denied</h2>
+        <p className="text-slate-400 max-w-md mb-12">
+          Your credentials do not possess the required <b>administrative</b> clearance for this node.
+        </p>
+        <Link to="/" className="px-8 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-all">
+          Exit Terminal
+        </Link>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
+const App: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const loadAppData = async () => {
       try {
+        await authService.init();
+        const authenticated = await authService.isAuthenticated();
+        if (authenticated) {
+          const userData = await authService.getUser();
+          const adminStatus = await authService.isAdmin();
+          setUser(userData);
+          setIsAdmin(adminStatus);
+        }
+        
         const p = await storageService.getProjects();
-        setProjects(p);
-        // Fix: Fetch blogs from storageService and update state to provide context for the AI Assistant
         const b = await storageService.getBlogs();
+        setProjects(p);
         setBlogs(b);
       } catch (err) {
-        console.error("Data load failed", err);
+        console.error("App synchronization failed:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
-    loadData();
-    
-    // Analytics tracking
-    storageService.trackEvent('PAGE_VIEW', { path: location.pathname });
+    loadAppData();
     window.scrollTo(0, 0);
-  }, [location.pathname]);
+  }, []);
+
+  const handleLogout = async () => {
+    await authService.logout();
+  };
 
   const navLinks = [
     { name: 'Projects', path: '/projects', icon: <Briefcase size={18} /> },
@@ -84,24 +126,6 @@ const App: React.FC = () => {
     { name: 'Certificates', path: '/certificates', icon: <Award size={18} /> },
     { name: 'AI Assistant', path: '/chat', icon: <Sparkles size={18} /> },
   ];
-
-  const handleLogin = async () => {
-    try {
-      setIsAuthLoading(true);
-      await authService.login();
-    } catch (err) {
-      console.error("Login failed", err);
-      setIsAuthLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-cyan-500/30 bg-slate-950">
@@ -127,40 +151,72 @@ const App: React.FC = () => {
               ))}
               <div className="h-4 w-px bg-white/10 mx-2"></div>
               
-              {/* Gear (Settings) / Auth Controls */}
-              {isAuthLoading ? (
-                <div className="p-2">
-                  <Loader2 size={20} className="animate-spin text-cyan-400" />
-                </div>
-              ) : user ? (
-                <div className="flex items-center space-x-2">
-                  <Link 
-                    to="/admin" 
-                    className={`p-2 transition-colors ${location.pathname.startsWith('/admin') ? 'text-cyan-400' : 'text-slate-400 hover:text-cyan-400'}`} 
-                    title="Admin Dashboard"
-                  >
-                    <Settings size={20} />
-                  </Link>
-                  <button 
-                    onClick={handleLogout} 
-                    className="p-2 text-slate-500 hover:text-red-400 transition-colors" 
-                    title="Logout"
-                  >
-                    <LogOut size={20} />
-                  </button>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleLogin} 
-                  className="p-2 text-slate-500 hover:text-cyan-400 transition-colors" 
-                  title="Admin Login"
-                >
-                  <Settings size={20} />
-                </button>
+              {!isLoading && (
+                <>
+                  {isAdmin ? (
+                    <div className="flex items-center space-x-2">
+                      <Link 
+                        to="/admin" 
+                        className={`p-2 transition-colors ${location.pathname.startsWith('/admin') ? 'text-cyan-400' : 'text-slate-400 hover:text-cyan-400'}`} 
+                        title="Admin Console"
+                      >
+                        <Settings size={20} />
+                      </Link>
+                      <button onClick={handleLogout} className="p-2 text-slate-500 hover:text-red-400 transition-colors">
+                        <LogOut size={20} />
+                      </button>
+                    </div>
+                  ) : user ? (
+                    <button onClick={handleLogout} className="text-xs font-black uppercase text-slate-500 hover:text-white transition-colors">
+                      Logout
+                    </button>
+                  ) : (
+                    <button onClick={() => authService.login()} className="p-2 text-slate-500 hover:text-cyan-400 transition-colors" title="Admin Login">
+                      <Settings size={20} />
+                    </button>
+                  )}
+                </>
               )}
+            </div>
+
+            <div className="md:hidden flex items-center">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-slate-400 hover:text-white transition-colors">
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
             </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-slate-900 border-b border-white/5 overflow-hidden"
+            >
+              <div className="px-4 py-6 space-y-4">
+                {navLinks.map((link) => (
+                  <Link 
+                    key={link.path} 
+                    to={link.path} 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center space-x-3 text-sm font-medium ${location.pathname === link.path ? 'text-cyan-400' : 'text-slate-400'}`}
+                  >
+                    {link.icon}
+                    <span>{link.name}</span>
+                  </Link>
+                ))}
+                <div className="pt-4 border-t border-white/5">
+                   <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-3 text-sm text-slate-400">
+                    <Settings size={18} />
+                    <span>Admin System</span>
+                   </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       <main className="flex-grow pt-16">
@@ -172,41 +228,24 @@ const App: React.FC = () => {
           <Route path="/certificates" element={<Certificates />} />
           <Route path="/chat" element={<ChatAssistant projects={projects} blogs={blogs} />} />
           
-          {/* Admin Protected Routes */}
           <Route path="/admin/*" element={
-            isAuthLoading ? (
-              <div className="flex flex-col items-center justify-center h-[70vh]">
-                <Loader2 size={40} className="animate-spin text-cyan-500 mb-4" />
-                <p className="text-slate-500 font-mono text-sm">Validating Session...</p>
-              </div>
-            ) : user ? (
+            <AdminGuard>
               <Routes>
                 <Route index element={<AdminDashboard projects={projects} />} />
                 <Route path="projects" element={<AdminProjects projects={projects} onUpdate={setProjects} />} />
                 <Route path="ai-inspector" element={<AiInspector projects={projects} />} />
+                <Route path="*" element={<Navigate to="/admin" replace />} />
               </Routes>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-[70vh] p-8 text-center">
-                <div className="p-4 bg-red-500/10 rounded-full mb-6">
-                  <Settings size={48} className="text-red-500" />
-                </div>
-                <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Access Denied</h2>
-                <p className="text-slate-400 max-w-md mb-8">This module is locked. Administrative credentials are required to modify the system registry.</p>
-                <button 
-                  onClick={handleLogin} 
-                  className="px-8 py-3 bg-cyan-600 text-white font-bold rounded-xl hover:bg-cyan-500 transition-all shadow-xl shadow-cyan-500/20"
-                >
-                  Authenticate Admin
-                </button>
-              </div>
-            )
+            </AdminGuard>
           } />
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
       <footer className="bg-slate-950/80 backdrop-blur-md border-t border-white/5 py-12 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500 text-xs">
-          &copy; {new Date().getFullYear()} Ranbeer Raja | KJ Somaiya College
+          &copy; {new Date().getFullYear()} Ranbeer Raja | Production Environment
         </div>
       </footer>
     </div>

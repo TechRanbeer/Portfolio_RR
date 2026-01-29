@@ -1,17 +1,21 @@
 
-import { createAuth0Client, Auth0Client } from '@auth0/auth0-spa-js';
+import { createAuth0Client, Auth0Client, User } from '@auth0/auth0-spa-js';
+import { getEnv } from './env';
 
 let auth0Client: Auth0Client | null = null;
+const ROLE_NAMESPACE = 'https://ranbeerraja.com/roles';
 
 export const authService = {
+  isConfigured: () => {
+    return !!getEnv('VITE_AUTH0_DOMAIN') && !!getEnv('VITE_AUTH0_CLIENT_ID');
+  },
+
   init: async () => {
-    // Fix: Use process.env for environment variables to avoid Property 'env' does not exist on type 'ImportMeta' errors
-    // Providing hardcoded fallbacks from the user's screenshot to ensure immediate functionality
-    const domain = process.env.VITE_AUTH0_DOMAIN || 'dev-ae5koudevlvws20s.us.auth0.com';
-    const clientId = process.env.VITE_AUTH0_CLIENT_ID || 'BK80v0IJpx4UuaemCQ2pAcaJR0HJuZAx';
+    const domain = getEnv('VITE_AUTH0_DOMAIN');
+    const clientId = getEnv('VITE_AUTH0_CLIENT_ID');
 
     if (!domain || !clientId) {
-      console.error("Auth0 configuration missing. Check VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID.");
+      console.error("Auth0 configuration is missing. Admin features disabled.");
       return null;
     }
 
@@ -21,18 +25,17 @@ export const authService = {
           domain,
           clientId,
           authorizationParams: {
-            redirect_uri: window.location.origin
+            redirect_uri: window.location.origin,
+            scope: 'openid profile email'
           },
           cacheLocation: 'localstorage',
           useRefreshTokens: true
         });
       }
 
-      // Handle the redirect callback if we are coming back from Auth0 login
       const query = window.location.search;
       if (query.includes("code=") && query.includes("state=")) {
         await auth0Client.handleRedirectCallback();
-        // Clean up the URL
         const url = new URL(window.location.href);
         url.search = '';
         window.history.replaceState({}, document.title, url.toString());
@@ -40,48 +43,53 @@ export const authService = {
 
       return auth0Client;
     } catch (error) {
-      console.error("Auth0 initialization error:", error);
+      console.error("Auth0 Initialization failed:", error);
       return null;
     }
   },
 
   login: async () => {
-    const client = auth0Client || await authService.init();
-    if (!client) {
-      console.error("Login aborted: Auth0 client failed to initialize.");
+    if (!authService.isConfigured()) {
+      alert("Authentication system is not configured for this deployment.");
       return;
     }
+    const client = auth0Client || await authService.init();
+    if (!client) return;
     await client.loginWithRedirect();
   },
 
   logout: async () => {
     const client = auth0Client || await authService.init();
-    if (!client) return;
+    if (!client) {
+      window.location.href = window.location.origin;
+      return;
+    }
     await client.logout({
-      logoutParams: {
-        returnTo: window.location.origin
-      }
+      logoutParams: { returnTo: window.location.origin }
     });
   },
 
-  getUser: async () => {
+  getUser: async (): Promise<User | undefined> => {
     const client = auth0Client || await authService.init();
     return await client?.getUser();
   },
 
-  isAuthenticated: async () => {
+  isAuthenticated: async (): Promise<boolean> => {
+    const client = auth0Client || await authService.init();
+    if (!client) return false;
+    return await client.isAuthenticated();
+  },
+
+  isAdmin: async (): Promise<boolean> => {
     const client = auth0Client || await authService.init();
     if (!client) return false;
     
     const authenticated = await client.isAuthenticated();
     if (!authenticated) return false;
 
-    const user = await client.getUser();
+    const claims = await client.getIdTokenClaims();
+    const roles = (claims?.[ROLE_NAMESPACE] as string[]) || [];
     
-    // Admin access check: Email match for Ranbeer Raja
-    const roles = user?.['https://ranbeerraja.com/roles'] || [];
-    const isAdmin = roles.includes('admin') || user?.email === 'ranbeerraja1@gmail.com';
-    
-    return isAdmin;
+    return roles.includes('admin');
   }
 };
