@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit2, ChevronLeft, Save, X } from 'lucide-react';
-import { Experience } from '../../types';
+import { Experience, EmploymentType } from '../../types';
 import { Link } from 'react-router-dom';
 import { storageService } from '../../services/storageService';
 
@@ -29,6 +30,7 @@ const AdminResume: React.FC<AdminResumeProps> = ({ experience, onUpdate }) => {
 
   const deleteExp = async (id: string) => {
     if (window.confirm("Delete record?")) {
+      // Corrected call to deleteExperience
       await storageService.deleteExperience(id);
       onUpdate(experience.filter(x => x.id !== id));
     }
@@ -41,7 +43,8 @@ const AdminResume: React.FC<AdminResumeProps> = ({ experience, onUpdate }) => {
       </Link>
       <div className="flex justify-between items-center mb-12">
         <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Experience Node Manager</h1>
-        <button onClick={() => { setEditingId('new'); setForm({ id: Math.random().toString(36).substr(2,9), title: '', achievements: [], order: experience.length }); }} className="bg-cyan-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 transition-all flex items-center gap-2">
+        {/* Corrected order property name to orderIndex */}
+        <button onClick={() => { setEditingId('new'); setForm({ id: Math.random().toString(36).substr(2,9), title: '', achievements: [], employmentType: 'FULL_TIME', startDate: '', isCurrent: false, orderIndex: experience.length }); }} className="bg-cyan-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 transition-all flex items-center gap-2">
           <Plus size={18} /> New Entry
         </button>
       </div>
@@ -50,7 +53,8 @@ const AdminResume: React.FC<AdminResumeProps> = ({ experience, onUpdate }) => {
         {experience.map(e => (
           <div key={e.id} className="p-8 bg-slate-900 border border-white/5 rounded-3xl flex justify-between items-center group">
             <div>
-              <div className="text-cyan-500 text-[10px] font-black uppercase tracking-widest mb-1">{e.period}</div>
+              {/* Corrected property access to startDate */}
+              <div className="text-cyan-500 text-[10px] font-black uppercase tracking-widest mb-1">{e.startDate}</div>
               <h3 className="text-xl font-black text-white uppercase tracking-tight">{e.title}</h3>
               <p className="text-slate-500 text-sm mt-1">{e.company}</p>
             </div>
@@ -73,7 +77,8 @@ const AdminResume: React.FC<AdminResumeProps> = ({ experience, onUpdate }) => {
               <div className="space-y-6 mb-10">
                 <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="Title" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
                 <input type="text" value={form.company} onChange={e => setForm({...form, company: e.target.value})} placeholder="Company" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
-                <input type="text" value={form.period} onChange={e => setForm({...form, period: e.target.value})} placeholder="Period (e.g. 2024 - Present)" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
+                {/* Corrected property binding to startDate */}
+                <input type="text" value={form.startDate} onChange={e => setForm({...form, startDate: e.target.value})} placeholder="Start Date (e.g. 2024-01-01)" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
                 <textarea value={form.achievements?.join('\n')} onChange={e => setForm({...form, achievements: e.target.value.split('\n')})} placeholder="Achievements (One per line)" className="w-full h-48 bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none resize-none" />
               </div>
               <button onClick={handleSave} className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-cyan-400 flex items-center justify-center gap-2"><Save size={18} /> Save Entry</button>

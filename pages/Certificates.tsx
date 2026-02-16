@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Award, ShieldCheck, Calendar } from 'lucide-react';
@@ -25,7 +26,8 @@ const Certificates: React.FC<CertificatesProps> = ({ certificates }) => {
             <h3 className="text-2xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors uppercase tracking-tight leading-tight">{cert.title}</h3>
             <div className="text-sm font-bold text-slate-500 mb-8 uppercase tracking-widest">{cert.issuer}</div>
             <div className="flex items-center justify-between mt-auto pt-8 border-t border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              <span className="flex items-center"><Calendar size={14} className="mr-2 text-cyan-500" /> {cert.date}</span>
+              {/* Corrected property access to issueDate */}
+              <span className="flex items-center"><Calendar size={14} className="mr-2 text-cyan-500" /> {cert.issueDate}</span>
               <span className="font-mono text-slate-700">{cert.id}</span>
             </div>
           </motion.div>

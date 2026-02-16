@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ChevronLeft, Save, X, ShieldCheck } from 'lucide-react';
@@ -18,12 +19,16 @@ const AdminCertificates: React.FC<AdminCertProps> = ({ certificates, onUpdate })
     if (!form.title) return;
     const cert: Certificate = {
       id: Math.random().toString(36).substr(2, 9),
+      slug: (form.title || '').toLowerCase().replace(/ /g, '-'),
       title: form.title || '',
       issuer: form.issuer || '',
-      date: form.date || '2025',
+      // Corrected property mapping to issueDate
+      issueDate: form.issueDate || '2025',
       category: form.category || 'Engineering',
+      featured: false,
       status: 'published'
     };
+    // Corrected call to saveCertificate
     await storageService.saveCertificate(cert);
     onUpdate([...certificates, cert]);
     setIsAdding(false);
@@ -31,6 +36,7 @@ const AdminCertificates: React.FC<AdminCertProps> = ({ certificates, onUpdate })
 
   const deleteCert = async (id: string) => {
     if (window.confirm("Delete record?")) {
+      // Corrected call to deleteCertificate
       await storageService.deleteCertificate(id);
       onUpdate(certificates.filter(x => x.id !== id));
     }
@@ -55,7 +61,8 @@ const AdminCertificates: React.FC<AdminCertProps> = ({ certificates, onUpdate })
             </div>
             <h3 className="text-lg font-black text-white uppercase tracking-tight mb-2">{c.title}</h3>
             <p className="text-sm font-bold text-slate-500 uppercase mb-6">{c.issuer}</p>
-            <div className="pt-6 border-t border-white/5 text-[10px] font-black text-cyan-500 uppercase tracking-widest">{c.date}</div>
+            {/* Corrected property access to issueDate */}
+            <div className="pt-6 border-t border-white/5 text-[10px] font-black text-cyan-500 uppercase tracking-widest">{c.issueDate}</div>
           </div>
         ))}
       </div>
@@ -71,7 +78,8 @@ const AdminCertificates: React.FC<AdminCertProps> = ({ certificates, onUpdate })
               <div className="space-y-6 mb-10">
                 <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="Title" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
                 <input type="text" value={form.issuer} onChange={e => setForm({...form, issuer: e.target.value})} placeholder="Issuer" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
-                <input type="text" value={form.date} onChange={e => setForm({...form, date: e.target.value})} placeholder="Year" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
+                {/* Corrected property binding to issueDate */}
+                <input type="text" value={form.issueDate} onChange={e => setForm({...form, issueDate: e.target.value})} placeholder="Year" className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:border-cyan-500 outline-none" />
               </div>
               <button onClick={handleSave} className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-cyan-400 flex items-center justify-center gap-2"><Save size={18} /> Issue Certificate</button>
             </motion.div>

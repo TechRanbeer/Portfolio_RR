@@ -1,8 +1,20 @@
+
 export enum ProjectCategory {
   SYSTEM_DESIGN = 'System Design',
   AI_ML = 'AI & Machine Learning',
   FULL_STACK = 'Full Stack',
   RESEARCH = 'Research'
+}
+
+export type EmploymentType = 'FULL_TIME' | 'INTERN' | 'CONTRACT' | 'FREELANCE';
+export type SpecCategory = 'HOST' | 'SECURITY' | 'INFRA' | 'CUSTOM';
+
+export interface ProjectDeploymentSpec {
+  id?: string;
+  category: SpecCategory;
+  label: string;
+  value: string;
+  order_index: number;
 }
 
 export interface Project {
@@ -17,13 +29,16 @@ export interface Project {
   images: string[];
   githubUrl?: string;
   liveUrl?: string;
-  metrics: {
-    label: string;
-    value: string;
-  }[];
+  deploymentSpecs: ProjectDeploymentSpec[];
   techStack: string[];
+  // Added metrics to Project interface
+  metrics: { label: string; value: string }[];
   featured: boolean;
   status: 'published' | 'draft';
+  startDate?: string;
+  endDate?: string;
+  isOngoing: boolean;
+  role?: string;
   createdAt: string;
   aiContext?: string;
   lastAiSync?: string;
@@ -44,26 +59,35 @@ export interface Blog {
 
 export interface Certificate {
   id: string;
+  slug: string;
   title: string;
   issuer: string;
-  date: string;
+  issueDate: string;
+  expiryDate?: string;
   category: string;
   verificationUrl?: string;
   imageUrl?: string;
+  featured: boolean;
   status: 'published' | 'draft';
 }
 
 export interface Experience {
   id: string;
+  slug?: string;
   title: string;
   company: string;
-  period: string;
+  location?: string;
+  employmentType: EmploymentType;
+  startDate: string;
+  endDate?: string;
+  isCurrent: boolean;
   achievements: string[];
-  order: number;
+  description?: string;
+  orderIndex: number;
 }
 
 export interface SiteConfig {
-  id: string;
+  id: number;
   logo_line1: string;
   logo_line2: string;
   hero_headline_line1: string;
@@ -82,7 +106,7 @@ export interface SiteConfig {
 
 export interface AnalyticsEvent {
   id: string;
-  eventType: 'PAGE_VIEW' | 'AI_QUERY' | 'RESUME_DOWNLOAD' | 'PROJECT_CLICK';
+  eventType: string;
   payload: any;
   createdAt: string;
 }
@@ -91,7 +115,7 @@ export interface AuditLog {
   id: string;
   action: string;
   actor: string;
-  details: string;
+  details: any;
   timestamp: string;
 }
 

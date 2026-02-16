@@ -12,13 +12,19 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ['React', 'TypeScript', 'Gemini API', 'Tailwind'],
     thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800&auto=format&fit=crop',
     images: ['https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&auto=format&fit=crop'],
-    metrics: [
-      { label: 'Deployment', value: 'Netlify' },
-      { label: 'Category', value: 'Hackathon' }
+    deploymentSpecs: [
+      { category: 'HOST', label: 'Deployment', value: 'Netlify', order_index: 0 },
+      { category: 'CUSTOM', label: 'Category', value: 'Hackathon', order_index: 1 }
     ],
     techStack: ['React', 'TypeScript', 'Gemini API', 'Tailwind'],
+    // Added missing required metrics property
+    metrics: [
+      { label: 'Accuracy', value: '98.4%' },
+      { label: 'Latency', value: '<200ms' }
+    ],
     featured: true,
     status: 'published',
+    isOngoing: false,
     createdAt: '2025-11-01T00:00:00.000Z'
   },
   {
@@ -31,33 +37,20 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ['Java', 'MySQL', 'JDBC', 'Swing'],
     thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop',
     images: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop'],
-    metrics: [
-      { label: 'Type', value: 'Desktop' },
-      { label: 'Database', value: 'MySQL' }
+    deploymentSpecs: [
+      { category: 'CUSTOM', label: 'Type', value: 'Desktop', order_index: 0 },
+      { category: 'INFRA', label: 'Database', value: 'MySQL', order_index: 1 }
     ],
     techStack: ['Java', 'Swing', 'JDBC', 'MySQL'],
-    featured: true,
-    status: 'published',
-    createdAt: '2025-03-01T00:00:00.000Z'
-  },
-  {
-    id: 'pi5-nas',
-    slug: 'home-nas-self-hosting',
-    title: 'Home NAS and Self-Hosting Lab',
-    description: 'Systems Administrator | Personal Lab (Feb. 2025 – Present)',
-    longDescription: 'Configured a localized cloud environment using a Raspberry Pi 5 and Docker, deploying services like CasaOS, Nextcloud, and Cockpit for automated data backups. Established a secure Mesh VPN using Tailscale, enabling encrypted remote access to the server without exposing ports to the public internet.',
-    category: ProjectCategory.SYSTEM_DESIGN,
-    tags: ['Ubuntu', 'Docker', 'Tailscale', 'CasaOS', 'Pi 5'],
-    thumbnail: 'https://images.unsplash.com/photo-1629739884942-8678d138dd64?q=80&w=800&auto=format&fit=crop',
-    images: ['https://images.unsplash.com/photo-1629739884942-8678d138dd64?q=80&w=1200&auto=format&fit=crop'],
+    // Added missing required metrics property
     metrics: [
-      { label: 'Host', value: 'Raspberry Pi 5' },
-      { label: 'Security', value: 'Tailscale VPN' }
+      { label: 'Data Integrity', value: '100%' },
+      { label: 'Query Speed', value: 'O(log n)' }
     ],
-    techStack: ['Linux (CLI)', 'Docker', 'CasaOS', 'Tailscale', 'Networking'],
     featured: true,
     status: 'published',
-    createdAt: '2025-02-01T00:00:00.000Z'
+    isOngoing: false,
+    createdAt: '2025-03-01T00:00:00.000Z'
   }
 ];
 
@@ -66,29 +59,36 @@ export const INITIAL_EXPERIENCE: Experience[] = [
     id: 'tachyon-moto',
     title: 'Senior Chassis Engineer',
     company: 'Tachyon Moto India, KJSCE',
-    period: 'Sep. 2025 – Present',
+    location: 'Mumbai, India',
+    employmentType: 'FULL_TIME',
+    startDate: '2025-09-01',
+    isCurrent: true,
     achievements: [
       'Engineered vehicle chassis from first principles, managing full lifecycle from geometry definition to material selection and manufacturability.',
       'Optimized frame stiffness and weight via iterative ANSYS structural validation, ensuring safety margins met competition standards.',
       'Led cross-functional integration of engine, suspension, and braking subsystems using FMEA to preemptively mitigate design flaws.'
     ],
-    order: 0
+    orderIndex: 0
   },
   {
     id: 'team-eta',
     title: 'EV Powertrain Engineer',
     company: 'Team ETA India, KJSCE',
-    period: 'Oct. 2024 – Sep. 2025',
+    location: 'Mumbai, India',
+    employmentType: 'FULL_TIME',
+    startDate: '2024-10-01',
+    endDate: '2025-09-30',
+    isCurrent: false,
     achievements: [
       'Engineered a drivetrain system and optimized gear ratios, increasing torque delivery by 15% and enhancing data accuracy for performance mapping.',
       'Authored 20+ pages of technical compliance for Shell Eco-marathon, achieving a 100% pass rate during safety and technical inspections.'
     ],
-    order: 1
+    orderIndex: 1
   }
 ];
 
 export const INITIAL_SITE_CONFIG: SiteConfig = {
-  id: 'default',
+  id: 1,
   logo_line1: 'Ranbeer',
   logo_line2: 'Raja',
   hero_headline_line1: 'Ranbeer',

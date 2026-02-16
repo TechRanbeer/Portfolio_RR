@@ -64,9 +64,12 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
       thumbnail: newProject.thumbnail || '',
       images: [newProject.thumbnail || ''],
       techStack: newProject.techStack || ['General Engineering'],
+      // Added missing required deploymentSpecs
+      deploymentSpecs: [],
       metrics: [{ label: 'Performance', value: 'Verified' }],
       featured: false,
       status: 'published',
+      isOngoing: false,
       createdAt: new Date().toISOString()
     };
     await storageService.saveProject(project);

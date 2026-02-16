@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Download, Briefcase, GraduationCap, Mail, MapPin, Phone, ChevronRight, Terminal, Target, BookOpen, Layers } from 'lucide-react';
@@ -20,11 +19,19 @@ const Resume: React.FC<ResumeProps> = ({ experience, config }) => {
     window.print();
   };
 
+  const formatDateRange = (start: string, end?: string, current?: boolean) => {
+    const s = new Date(start).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    if (current) return `${s} – Present`;
+    if (!end) return s;
+    const e = new Date(end).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return `${s} – ${e}`;
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
       <div className="flex justify-between items-center mb-10 no-print">
         <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-          <BookOpen size={16} /> Resume
+          <BookOpen size={16} /> Professional Dossier
         </h2>
         <button 
           onClick={handleGeneratePDF} 
@@ -93,8 +100,8 @@ const Resume: React.FC<ResumeProps> = ({ experience, config }) => {
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2">
                     <h3 className="text-lg font-black text-white uppercase tracking-tight print:text-black">{exp.company}</h3>
                     <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest print:text-black hidden sm:inline">Mumbai, India</span>
-                      <span className="text-[10px] font-mono text-cyan-500 font-black uppercase tracking-widest print:text-slate-700">{exp.period}</span>
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest print:text-black hidden sm:inline">{exp.location || 'Mumbai, India'}</span>
+                      <span className="text-[10px] font-mono text-cyan-500 font-black uppercase tracking-widest print:text-slate-700">{formatDateRange(exp.startDate, exp.endDate, exp.isCurrent)}</span>
                     </div>
                   </div>
                   <div className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-4 print:text-slate-700">{exp.title}</div>

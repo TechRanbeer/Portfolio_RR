@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Save, ChevronLeft, Globe, User, Sparkles } from 'lucide-react';
@@ -12,7 +13,8 @@ interface AdminSettingsProps {
 
 const AdminSettings: React.FC<AdminSettingsProps> = ({ config, onUpdate }) => {
   const [form, setForm] = useState<SiteConfig>(config || {
-    id: 'default',
+    // Fixed id type to be numeric
+    id: 1,
     logo_line1: 'Ranbeer', logo_line2: 'Raja',
     hero_headline_line1: 'Ranbeer', hero_headline_line2: 'Raja',
     hero_subtitle: '', contact_email: '', contact_phone: '', location: '', bio_summary: '',
