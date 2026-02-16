@@ -1,6 +1,7 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { Project, Certificate, AnalyticsEvent, AuditLog, Blog, Experience, SiteConfig } from '../types';
-import { INITIAL_PROJECTS, INITIAL_BLOGS } from '../constants';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, INITIAL_EXPERIENCE, INITIAL_SITE_CONFIG } from '../constants';
 import { getEnv } from './env';
 
 const SUPABASE_URL = getEnv('VITE_SUPABASE_URL');
@@ -95,11 +96,12 @@ export const storageService = {
 
   // --- Experience ---
   getExperience: async (): Promise<Experience[]> => {
-    if (!supabase) return [];
+    if (!supabase) return INITIAL_EXPERIENCE;
     try {
       const { data } = await supabase.from('experience').select('*').order('order', { ascending: true });
-      return (data || []) as Experience[];
-    } catch (e) { return []; }
+      if (!data || data.length === 0) return INITIAL_EXPERIENCE;
+      return data as Experience[];
+    } catch (e) { return INITIAL_EXPERIENCE; }
   },
   saveExperience: async (exp: Experience) => {
     if (!supabase) throw new Error("Supabase offline.");
@@ -114,11 +116,12 @@ export const storageService = {
 
   // --- Site Config ---
   getSiteConfig: async (): Promise<SiteConfig | null> => {
-    if (!supabase) return null;
+    if (!supabase) return INITIAL_SITE_CONFIG;
     try {
-      const { data } = await supabase.from('site_config').select('*').limit(1).single();
+      const { data, error } = await supabase.from('site_config').select('*').limit(1).single();
+      if (error || !data) return INITIAL_SITE_CONFIG;
       return data as SiteConfig;
-    } catch (e) { return null; }
+    } catch (e) { return INITIAL_SITE_CONFIG; }
   },
   saveSiteConfig: async (config: SiteConfig) => {
     if (!supabase) throw new Error("Supabase offline.");
@@ -150,21 +153,7 @@ export const storageService = {
   seedDatabase: async () => {
     if (!supabase) return;
     for (const p of INITIAL_PROJECTS) { await storageService.saveProject(p); }
-    const currentConfig = await storageService.getSiteConfig();
-    if (!currentConfig) {
-      await storageService.saveSiteConfig({
-        id: 'default',
-        logo_line1: 'Ranbeer',
-        logo_line2: 'Raja',
-        hero_headline_line1: 'Ranbeer',
-        hero_headline_line2: 'Raja',
-        hero_subtitle: 'Mechanical Engineer & Embedded Systems Specialist.',
-        contact_email: 'ranbeerraja1@gmail.com',
-        contact_phone: '+91 97692 20377',
-        location: 'Thane, MH, India',
-        bio_summary: 'High-impact Mechanical Engineering student with end-to-end ownership of vehicle systems.',
-        social_links: { github: '', linkedin: '' }
-      });
-    }
+    for (const e of INITIAL_EXPERIENCE) { await storageService.saveExperience(e); }
+    await storageService.saveSiteConfig(INITIAL_SITE_CONFIG);
   }
 };
