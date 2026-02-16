@@ -51,7 +51,6 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
       parts: [{ text: m.content }]
     }));
 
-    // Fix: Pass 'blogs' from props instead of an empty array to resolve argument mismatch and provide context
     const aiResponse = await geminiService.generatePortfolioResponse(input, history, projects, blogs);
 
     setMessages(prev => [...prev, {
@@ -93,7 +92,6 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 flex flex-col h-[75vh] bg-slate-900/40 border border-white/5 rounded-[2rem] overflow-hidden backdrop-blur-md shadow-2xl relative">
-          {/* Subtle Scanline Effect */}
           <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] z-0 bg-[length:100%_4px,4px_100%]"></div>
 
           <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 md:p-8 space-y-8 scroll-smooth relative z-10 no-scrollbar">
@@ -187,7 +185,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
                 <button 
                   key={s} 
                   onClick={() => setInput(s)}
-                  className="text-[11px] font-medium bg-slate-800/50 hover:bg-cyan-500/10 hover:text-cyan-400 text-slate-400 px-3 py-1.5 rounded-full border border-white/5 transition-all"
+                  className="text-[11px] font-medium bg-slate-800/50 hover:bg-slate-700 hover:text-slate-100 text-slate-400 px-3 py-1.5 rounded-full border border-white/5 transition-all"
                 >
                   {s}
                 </button>

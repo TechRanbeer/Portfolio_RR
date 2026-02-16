@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 
 // Types for component props
@@ -250,7 +249,7 @@ const Hero: React.FC<HeroProps> = ({ headline, subtitle, buttons, className = ""
             <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)] animate-fade-in-up animation-delay-200 tracking-tighter uppercase">
               {headline.line1}
             </h1>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] animate-fade-in-up animation-delay-400 tracking-tighter uppercase">
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-cyan-400 drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] animate-fade-in-up animation-delay-400 tracking-tighter uppercase">
               {headline.line2}
             </h1>
           </div>

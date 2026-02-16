@@ -70,7 +70,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects }) => {
               onClick={() => setSelectedCategory(cat)}
               className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                 selectedCategory === cat 
-                  ? 'bg-cyan-600/10 border-cyan-500 text-cyan-400' 
+                  ? 'bg-white border-white text-slate-950 font-bold' 
                   : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
               }`}
             >

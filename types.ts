@@ -1,4 +1,3 @@
-
 export enum ProjectCategory {
   SYSTEM_DESIGN = 'System Design',
   AI_ML = 'AI & Machine Learning',
@@ -26,12 +25,10 @@ export interface Project {
   featured: boolean;
   status: 'published' | 'draft';
   createdAt: string;
-  // New AI Context Fields
   aiContext?: string;
   lastAiSync?: string;
 }
 
-// Fix: Added missing Blog interface which was causing multiple module errors
 export interface Blog {
   id: string;
   slug: string;
@@ -54,6 +51,33 @@ export interface Certificate {
   verificationUrl?: string;
   imageUrl?: string;
   status: 'published' | 'draft';
+}
+
+export interface Experience {
+  id: string;
+  title: string;
+  company: string;
+  period: string;
+  achievements: string[];
+  order: number;
+}
+
+export interface SiteConfig {
+  id: string;
+  logo_line1: string;
+  logo_line2: string;
+  hero_headline_line1: string;
+  hero_headline_line2: string;
+  hero_subtitle: string;
+  contact_email: string;
+  contact_phone: string;
+  location: string;
+  bio_summary: string;
+  social_links: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+  };
 }
 
 export interface AnalyticsEvent {
