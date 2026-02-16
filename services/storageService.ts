@@ -62,31 +62,33 @@ export const storageService = {
     } catch (err) { return INITIAL_PROJECTS; }
   },
   saveProject: async (project: Project) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('projects').upsert(mapProjectToDb(project));
     if (error) throw error;
-    await storageService.logAudit('PROJECT_SYNC', `Project synced: ${project.title}`);
+    await storageService.logAudit('PROJECT_UPDATE', `Project: ${project.title}`);
   },
   deleteProject: async (id: string) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('projects').delete().eq('id', id);
     if (error) throw error;
-    await storageService.logAudit('PROJECT_DELETE', `Project deleted: ${id}`);
+    await storageService.logAudit('PROJECT_DELETE', `ID: ${id}`);
   },
 
   // --- Certificates ---
   getCertificates: async (): Promise<Certificate[]> => {
     if (!supabase) return [];
-    const { data } = await supabase.from('certificates').select('*').order('date', { ascending: false });
-    return (data || []) as Certificate[];
+    try {
+      const { data } = await supabase.from('certificates').select('*').order('date', { ascending: false });
+      return (data || []) as Certificate[];
+    } catch (e) { return []; }
   },
   saveCertificate: async (cert: Certificate) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('certificates').upsert(cert);
     if (error) throw error;
   },
   deleteCertificate: async (id: string) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('certificates').delete().eq('id', id);
     if (error) throw error;
   },
@@ -94,16 +96,18 @@ export const storageService = {
   // --- Experience ---
   getExperience: async (): Promise<Experience[]> => {
     if (!supabase) return [];
-    const { data } = await supabase.from('experience').select('*').order('order', { ascending: true });
-    return (data || []) as Experience[];
+    try {
+      const { data } = await supabase.from('experience').select('*').order('order', { ascending: true });
+      return (data || []) as Experience[];
+    } catch (e) { return []; }
   },
   saveExperience: async (exp: Experience) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('experience').upsert(exp);
     if (error) throw error;
   },
   deleteExperience: async (id: string) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('experience').delete().eq('id', id);
     if (error) throw error;
   },
@@ -111,16 +115,18 @@ export const storageService = {
   // --- Site Config ---
   getSiteConfig: async (): Promise<SiteConfig | null> => {
     if (!supabase) return null;
-    const { data } = await supabase.from('site_config').select('*').limit(1).single();
-    return data as SiteConfig;
+    try {
+      const { data } = await supabase.from('site_config').select('*').limit(1).single();
+      return data as SiteConfig;
+    } catch (e) { return null; }
   },
   saveSiteConfig: async (config: SiteConfig) => {
-    if (!supabase) throw new Error("Database offline");
+    if (!supabase) throw new Error("Supabase offline.");
     const { error } = await supabase.from('site_config').upsert(config);
     if (error) throw error;
   },
 
-  // --- Others ---
+  // --- Utility ---
   getBlogs: (): Blog[] => INITIAL_BLOGS,
   trackEvent: async (type: AnalyticsEvent['eventType'], payload: any) => {
     if (!supabase) return;
@@ -128,7 +134,7 @@ export const storageService = {
   },
   getAnalytics: async (): Promise<AnalyticsEvent[]> => {
     if (!supabase) return [];
-    const { data } = await supabase.from('analytics').select('*').limit(100).order('created_at', { ascending: false });
+    const { data } = await supabase.from('analytics').select('*').limit(50).order('created_at', { ascending: false });
     return (data || []).map(d => ({ id: d.id, eventType: d.event_type, payload: d.payload, createdAt: d.created_at }));
   },
   logAudit: async (action: string, details: string) => {
@@ -138,15 +144,14 @@ export const storageService = {
   },
   getAuditLogs: async (): Promise<AuditLog[]> => {
     if (!supabase) return [];
-    const { data } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50);
+    const { data } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(20);
     return (data || []).map(d => ({ id: d.id, action: d.action, actor: d.actor, details: d.details, timestamp: d.created_at }));
   },
   seedDatabase: async () => {
     if (!supabase) return;
     for (const p of INITIAL_PROJECTS) { await storageService.saveProject(p); }
-    // Add default site config if empty
-    const current = await storageService.getSiteConfig();
-    if (!current) {
+    const currentConfig = await storageService.getSiteConfig();
+    if (!currentConfig) {
       await storageService.saveSiteConfig({
         id: 'default',
         logo_line1: 'Ranbeer',
@@ -157,7 +162,7 @@ export const storageService = {
         contact_email: 'ranbeerraja1@gmail.com',
         contact_phone: '+91 97692 20377',
         location: 'Thane, MH, India',
-        bio_summary: 'High-impact Mechanical Engineering student...',
+        bio_summary: 'High-impact Mechanical Engineering student with end-to-end ownership of vehicle systems.',
         social_links: { github: '', linkedin: '' }
       });
     }

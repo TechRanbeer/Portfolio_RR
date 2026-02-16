@@ -16,21 +16,14 @@ export const authService = {
   },
 
   login: async (email: string, password?: string): Promise<{ success: boolean; error?: string }> => {
-    if (!supabase) return { success: false, error: "Database offline" };
+    if (!supabase) return { success: false, error: "Supabase connection not established." };
     
     try {
       if (password) {
-        // Standard login
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) return { success: false, error: error.message };
       } else {
-        // Magic link
-        const { error } = await supabase.auth.signInWithOtp({ 
-          email,
-          options: {
-            emailRedirectTo: window.location.origin,
-          }
-        });
+        const { error } = await supabase.auth.signInWithOtp({ email });
         if (error) return { success: false, error: error.message };
       }
       return { success: true };
@@ -53,13 +46,10 @@ export const authService = {
   getUser: async () => {
     if (!supabase) return undefined;
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.user_metadata?.full_name || "Ranbeer Raja"
-      };
-    }
-    return undefined;
+    return user ? {
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.full_name || "Ranbeer Raja"
+    } : undefined;
   }
 };

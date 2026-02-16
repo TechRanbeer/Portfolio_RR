@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Briefcase, Settings, FileText, Award, LogOut, Loader2, ShieldAlert, Key, Lock, MessageSquare, LayoutDashboard
+  Menu, X, Briefcase, Settings, FileText, Award, LogOut, Loader2, Key, Lock, MessageSquare, LayoutDashboard
 } from 'lucide-react';
 
-// Components
+// Pages
 import Home from './pages/Home';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
@@ -26,33 +26,19 @@ import { Project, Blog, Experience, SiteConfig, Certificate } from './types';
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
 
-/**
- * AdminGuard Component
- * Redirects to login if session is not found.
- */
 const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
   useEffect(() => {
-    const checkAuth = async () => {
+    const check = async () => {
       const auth = await authService.isAuthenticated();
       setIsAuthenticated(auth);
     };
-    checkAuth();
+    check();
   }, []);
 
-  if (isAuthenticated === null) {
-    return (
-      <div className="h-screen w-full bg-slate-950 flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-cyan-500" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (isAuthenticated === null) return <div className="h-screen flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-cyan-500" /></div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 
@@ -68,10 +54,10 @@ const App: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const loadAppData = async () => {
+  const loadData = async () => {
     try {
-      const adminStatus = await authService.isAdmin();
-      setIsAdmin(adminStatus);
+      const admin = await authService.isAdmin();
+      setIsAdmin(admin);
       
       const [p, b, e, c, s] = await Promise.all([
         storageService.getProjects(),
@@ -87,16 +73,24 @@ const App: React.FC = () => {
       setCertificates(c);
       setSiteConfig(s);
     } catch (err) {
-      console.error("Critical: Data hydration failed.", err);
+      console.error("Hydration Error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAppData();
+    loadData();
     window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  const handleLogout = async () => {
+    await authService.logout();
+    setIsAdmin(false);
+    navigate('/');
+  };
+
+  if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-cyan-500" size={40} /></div>;
 
   const navLinks = [
     { name: 'Projects', path: '/projects', icon: <Briefcase size={18} /> },
@@ -105,108 +99,44 @@ const App: React.FC = () => {
     { name: 'AI Assistant', path: '/chat', icon: <MessageSquare size={18} /> },
   ];
 
-  const handleLogout = async () => {
-    await authService.logout();
-    setIsAdmin(false);
-    navigate('/');
-  };
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-full bg-slate-950 flex items-center justify-center">
-        <Loader2 size={40} className="text-cyan-500 animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 selection:bg-cyan-500/30 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-300 selection:bg-cyan-500/30 overflow-x-hidden">
       <CloudBackground />
-      
-      {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <Link to="/" className="flex items-center space-x-2 group">
-              <span className="text-white font-black uppercase tracking-tighter text-xl">
-                {siteConfig?.logo_line1 || 'Ranbeer'} <span className="text-cyan-400">{siteConfig?.logo_line2 || 'Raja'}</span>
-              </span>
-            </Link>
-
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center space-x-8">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  className={`text-xs font-bold uppercase tracking-widest hover:text-white transition-colors flex items-center space-x-2 ${location.pathname === link.path ? 'text-white' : 'text-slate-500'}`}
-                >
-                  {link.icon}
-                  <span>{link.name}</span>
-                </Link>
-              ))}
-              {isAdmin && (
-                <div className="flex items-center space-x-4 border-l border-white/10 pl-8">
-                  <Link to="/admin" className="p-2 bg-slate-900 border border-white/10 rounded-lg text-cyan-400 hover:text-cyan-300 transition-colors" title="Admin Control">
-                    <LayoutDashboard size={18} />
-                  </Link>
-                  <button onClick={handleLogout} className="p-2 bg-slate-900 border border-white/10 rounded-lg text-red-400 hover:text-red-300 transition-colors" title="Logout">
-                    <LogOut size={18} />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Toggle */}
-            <button 
-              className="md:hidden p-2 text-white"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
+          <Link to="/" className="text-white font-black uppercase tracking-tighter text-xl">
+            {siteConfig?.logo_line1 || 'Ranbeer'} <span className="text-cyan-400">{siteConfig?.logo_line2 || 'Raja'}</span>
+          </Link>
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((l) => (
+              <Link key={l.path} to={l.path} className={`text-xs font-bold uppercase tracking-widest hover:text-white transition-colors flex items-center space-x-2 ${location.pathname === l.path ? 'text-white' : 'text-slate-500'}`}>
+                {l.icon}<span>{l.name}</span>
+              </Link>
+            ))}
+            {isAdmin && (
+              <div className="flex items-center space-x-4 border-l border-white/10 pl-8">
+                <Link to="/admin" className="text-cyan-400 hover:text-cyan-300 transition-colors" title="Dashboard"><LayoutDashboard size={20} /></Link>
+                <button onClick={handleLogout} className="text-red-400 hover:text-red-300 transition-colors"><LogOut size={20} /></button>
+              </div>
+            )}
           </div>
+          <button className="md:hidden p-2 text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}</button>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-slate-950 pt-24 px-4 md:hidden"
-          >
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-40 bg-slate-950 pt-24 px-4 md:hidden">
             <div className="space-y-4">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-white font-bold"
-                >
-                  {link.icon}
-                  <span className="uppercase tracking-widest text-sm">{link.name}</span>
+              {navLinks.map((l) => (
+                <Link key={l.path} to={l.path} onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-white font-bold uppercase tracking-widest text-sm">
+                  {l.icon}<span>{l.name}</span>
                 </Link>
               ))}
               {isAdmin && (
-                <>
-                  <Link 
-                    to="/admin" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-cyan-400 font-bold"
-                  >
-                    <LayoutDashboard size={18} />
-                    <span className="uppercase tracking-widest text-sm">Dashboard</span>
-                  </Link>
-                  <button 
-                    onClick={handleLogout}
-                    className="w-full flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-red-400 font-bold"
-                  >
-                    <LogOut size={18} />
-                    <span className="uppercase tracking-widest text-sm">Logout</span>
-                  </button>
-                </>
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-cyan-400 font-bold uppercase tracking-widest text-sm">
+                  <LayoutDashboard size={18} /><span>Dashboard</span>
+                </Link>
               )}
             </div>
           </motion.div>
@@ -221,24 +151,22 @@ const App: React.FC = () => {
           <Route path="/chat" element={<ChatAssistant projects={projects} blogs={blogs} />} />
           <Route path="/resume" element={<Resume experience={experience} config={siteConfig} />} />
           <Route path="/certificates" element={<Certificates certificates={certificates} />} />
-          <Route path="/login" element={<Login onLoginSuccess={loadAppData} />} />
+          <Route path="/login" element={<Login onLoginSuccess={loadData} />} />
           
-          {/* Admin Routes */}
           <Route path="/admin" element={<AdminGuard><AdminDashboard projects={projects} /></AdminGuard>} />
           <Route path="/admin/projects" element={<AdminGuard><AdminProjects projects={projects} onUpdate={setProjects} /></AdminGuard>} />
           <Route path="/admin/resume" element={<AdminGuard><AdminResume experience={experience} onUpdate={setExperience} /></AdminGuard>} />
           <Route path="/admin/certificates" element={<AdminGuard><AdminCertificates certificates={certificates} onUpdate={setCertificates} /></AdminGuard>} />
           <Route path="/admin/settings" element={<AdminGuard><AdminSettings config={siteConfig} onUpdate={setSiteConfig} /></AdminGuard>} />
           <Route path="/admin/ai-inspector" element={<AdminGuard><AiInspector projects={projects} /></AdminGuard>} />
-          
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
       <footer className="py-12 border-t border-white/5 mt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600">
-            &copy; {new Date().getFullYear()} {siteConfig?.logo_line1 || 'Ranbeer'} {siteConfig?.logo_line2 || 'Raja'}. Engineered for Excellence.
+            &copy; {new Date().getFullYear()} {siteConfig?.logo_line1 || 'Ranbeer'} {siteConfig?.logo_line2 || 'Raja'}.
           </p>
         </div>
       </footer>
