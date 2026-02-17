@@ -1,4 +1,3 @@
-
 import { Project, ProjectCategory, Blog, Experience, SiteConfig } from './types';
 
 export const INITIAL_PROJECTS: Project[] = [
@@ -9,7 +8,6 @@ export const INITIAL_PROJECTS: Project[] = [
     description: 'Lead Developer | Hackathon Project (Nov. 2025)',
     longDescription: 'Architected a production-ready web application leveraging the Google Gemini API to provide real-time financial insights and automated expense categorization. Implemented a responsive frontend using React and TypeScript, ensuring high performance and a seamless user experience across devices. Deployed the final product on Netlify, managing environment variables and API security for live user traffic.',
     category: ProjectCategory.AI_ML,
-    tags: ['React', 'TypeScript', 'Gemini API', 'Tailwind'],
     thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800&auto=format&fit=crop',
     images: ['https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&auto=format&fit=crop'],
     deploymentSpecs: [
@@ -17,7 +15,7 @@ export const INITIAL_PROJECTS: Project[] = [
       { category: 'CUSTOM', label: 'Category', value: 'Hackathon', order_index: 1 }
     ],
     techStack: ['React', 'TypeScript', 'Gemini API', 'Tailwind'],
-    // Added missing required metrics property
+    featureBlocks: [],
     metrics: [
       { label: 'Accuracy', value: '98.4%' },
       { label: 'Latency', value: '<200ms' }
@@ -34,7 +32,6 @@ export const INITIAL_PROJECTS: Project[] = [
     description: 'Java Developer | Personal Project (Mar. 2025 – Apr. 2025)',
     longDescription: 'Developed a desktop application using Java Swing, featuring a GUI for efficient warehouse resource tracking. Built a relational database backend using MySQL and JDBC to handle persistent storage with full CRUD functionality and data integrity constraints.',
     category: ProjectCategory.FULL_STACK,
-    tags: ['Java', 'MySQL', 'JDBC', 'Swing'],
     thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop',
     images: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop'],
     deploymentSpecs: [
@@ -42,7 +39,7 @@ export const INITIAL_PROJECTS: Project[] = [
       { category: 'INFRA', label: 'Database', value: 'MySQL', order_index: 1 }
     ],
     techStack: ['Java', 'Swing', 'JDBC', 'MySQL'],
-    // Added missing required metrics property
+    featureBlocks: [],
     metrics: [
       { label: 'Data Integrity', value: '100%' },
       { label: 'Query Speed', value: 'O(log n)' }

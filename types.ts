@@ -1,4 +1,3 @@
-
 export enum ProjectCategory {
   SYSTEM_DESIGN = 'System Design',
   AI_ML = 'AI & Machine Learning',
@@ -9,8 +8,20 @@ export enum ProjectCategory {
 export type EmploymentType = 'FULL_TIME' | 'INTERN' | 'CONTRACT' | 'FREELANCE';
 export type SpecCategory = 'HOST' | 'SECURITY' | 'INFRA' | 'CUSTOM';
 
+export interface ProjectFeatureBlock {
+  id?: string;
+  project_id?: string;
+  title: string;
+  subtitle?: string;
+  description: string;
+  icon?: string;
+  image_url?: string;
+  order_index: number;
+}
+
 export interface ProjectDeploymentSpec {
   id?: string;
+  project_id?: string;
   category: SpecCategory;
   label: string;
   value: string;
@@ -24,24 +35,40 @@ export interface Project {
   description: string;
   longDescription: string;
   category: ProjectCategory;
-  tags: string[];
+  mainTagId?: string;
   thumbnail: string;
   images: string[];
   githubUrl?: string;
   liveUrl?: string;
-  deploymentSpecs: ProjectDeploymentSpec[];
-  techStack: string[];
-  // Added metrics to Project interface
   metrics: { label: string; value: string }[];
+  techStack: string[]; 
+  featureBlocks: ProjectFeatureBlock[];
+  deploymentSpecs: ProjectDeploymentSpec[];
   featured: boolean;
   status: 'published' | 'draft';
   startDate?: string;
   endDate?: string;
   isOngoing: boolean;
   role?: string;
+  teamSize?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string[];
   createdAt: string;
+  updatedAt?: string;
   aiContext?: string;
   lastAiSync?: string;
+}
+
+export interface MainTag {
+  id: string;
+  name: string;
+}
+
+export interface TechStackTag {
+  id: string;
+  name: string;
+  category: string;
 }
 
 export interface Blog {
@@ -65,10 +92,15 @@ export interface Certificate {
   issueDate: string;
   expiryDate?: string;
   category: string;
+  description?: string;
   verificationUrl?: string;
+  credentialId?: string;
+  credentialUrl?: string;
   imageUrl?: string;
   featured: boolean;
   status: 'published' | 'draft';
+  publishAt?: string;
+  createdAt?: string;
 }
 
 export interface Experience {
