@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { Project, Blog } from "../types";
 import { getEnv } from "./env";
@@ -24,10 +25,8 @@ export class GeminiService {
     projects: Project[],
     blogs: Blog[]
   ) {
-    const apiKey = getEnv('API_KEY');
-    if (!apiKey) return "AI connection offline. Please check API_KEY environment variable.";
-
-    const ai = new GoogleGenAI({ apiKey });
+    // Correctly using process.env.API_KEY directly for initialization as per SDK guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const contextPrompt = SYSTEM_PROMPT.replace('{{PROJECTS_JSON}}', JSON.stringify({
       projects: projects.map(p => ({ 
@@ -57,6 +56,7 @@ export class GeminiService {
           topK: 64
         }
       });
+      // Correct extraction of text property from GenerateContentResponse
       return response.text || "I couldn't generate a response.";
     } catch (error) {
       console.error("Gemini Error:", error);
@@ -65,10 +65,8 @@ export class GeminiService {
   }
 
   async generateTechnicalSummary(project: Project) {
-    const apiKey = getEnv('API_KEY');
-    if (!apiKey) return "AI summarizing unavailable.";
-    
-    const ai = new GoogleGenAI({ apiKey });
+    // Correctly using process.env.API_KEY directly for initialization as per SDK guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `Write a high-level, 1-paragraph technical engineering abstract for: ${project.title}. Focus on system design and architectural challenges.`;
     
     try {
@@ -76,6 +74,7 @@ export class GeminiService {
         model: this.modelName, 
         contents: prompt 
       });
+      // Correct extraction of text property from GenerateContentResponse
       return response.text || "No summary available.";
     } catch (e) {
       return "Technical abstract currently unavailable.";

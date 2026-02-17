@@ -40,7 +40,13 @@ CREATE TABLE IF NOT EXISTS projects (
     role TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
-    deleted_at TIMESTAMPTZ
+    deleted_at TIMESTAMPTZ,
+    -- Technical Deep Dive Fields
+    architecture_impact TEXT,
+    scale_strategy_title TEXT,
+    scale_strategy_description TEXT,
+    latency_profile_title TEXT,
+    latency_profile_description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS project_tech_stack (
@@ -59,6 +65,18 @@ CREATE TABLE IF NOT EXISTS project_deployment_specs (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS project_feature_blocks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    subtitle TEXT,
+    description TEXT,
+    icon TEXT,
+    image_url TEXT,
+    order_index INT DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS certificates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     slug TEXT UNIQUE NOT NULL,
@@ -69,11 +87,14 @@ CREATE TABLE IF NOT EXISTS certificates (
     expiry_date DATE,
     category TEXT,
     verification_url TEXT,
+    credential_id TEXT,
+    credential_url TEXT,
     image_url TEXT,
     featured BOOLEAN DEFAULT false,
     status project_status DEFAULT 'published',
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS experience (
@@ -140,7 +161,7 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public Read Projects" ON projects FOR SELECT USING (status = 'published' AND deleted_at IS NULL);
 CREATE POLICY "Public Read Experience" ON experience FOR SELECT USING (true);
-CREATE POLICY "Public Read Certificates" ON certificates FOR SELECT USING (status = 'published');
+CREATE POLICY "Public Read Certificates" ON certificates FOR SELECT USING (status = 'published' AND deleted_at IS NULL);
 CREATE POLICY "Public Read Config" ON site_config FOR SELECT USING (true);
 
 -- ADMIN POLICIES (Assumes auth.email() check)

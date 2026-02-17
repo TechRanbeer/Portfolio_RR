@@ -53,7 +53,13 @@ const mapProjectFromDb = (d: any): Project => ({
   createdAt: d.created_at,
   updatedAt: d.updated_at,
   aiContext: d.ai_context,
-  lastAiSync: d.last_ai_sync
+  lastAiSync: d.last_ai_sync,
+  // Technical Deep Dive
+  architectureImpact: d.architecture_impact,
+  scaleStrategyTitle: d.scale_strategy_title,
+  scaleStrategyDescription: d.scale_strategy_description,
+  latencyProfileTitle: d.latency_profile_title,
+  latencyProfileDescription: d.latency_profile_description
 });
 
 export const storageService = {
@@ -116,12 +122,18 @@ export const storageService = {
       team_size: project.teamSize,
       meta_title: project.metaTitle,
       meta_description: project.metaDescription,
-      keywords: project.keywords
+      keywords: project.keywords,
+      // Technical Deep Dive
+      architecture_impact: project.architectureImpact,
+      scale_strategy_title: project.scaleStrategyTitle,
+      scale_strategy_description: project.scaleStrategyDescription,
+      latency_profile_title: project.latencyProfileTitle,
+      latency_profile_description: project.latencyProfileDescription
     });
 
     if (projectError) throw projectError;
 
-    // Reset and sync tech stack relation
+    // Sync tech stack relation
     await supabase.from('project_tech_stack').delete().eq('project_id', project.id);
     if (project.techStack.length > 0) {
       const { data: tagData } = await supabase.from('tech_stack_tags').select('id, name').in('name', project.techStack);
@@ -132,7 +144,7 @@ export const storageService = {
       }
     }
 
-    // Update specs
+    // Sync specs
     await supabase.from('project_deployment_specs').delete().eq('project_id', project.id);
     if (project.deploymentSpecs.length > 0) {
       await supabase.from('project_deployment_specs').insert(
@@ -146,7 +158,7 @@ export const storageService = {
       );
     }
 
-    // Update feature blocks
+    // Sync feature blocks
     await supabase.from('project_feature_blocks').delete().eq('project_id', project.id);
     if (project.featureBlocks.length > 0) {
       await supabase.from('project_feature_blocks').insert(
@@ -171,34 +183,46 @@ export const storageService = {
 
   getCertificates: async (): Promise<Certificate[]> => {
     if (!supabase) return [];
-    const { data } = await supabase.from('certificates').select('*').is('deleted_at', null).order('issue_date', { ascending: false });
-    return (data || []).map(c => ({
-      id: c.id,
-      slug: c.slug,
-      title: c.title,
-      issuer: c.issuer,
-      issueDate: c.issue_date,
-      expiryDate: c.expiry_date,
-      category: c.category,
-      description: c.description,
-      verificationUrl: c.verification_url,
-      credentialId: c.credential_id,
-      credentialUrl: c.credential_url,
-      imageUrl: c.image_url,
-      featured: c.featured,
-      status: c.status
-    }));
+    try {
+      const { data } = await supabase.from('certificates').select('*').is('deleted_at', null).order('issue_date', { ascending: false });
+      return (data || []).map(c => ({
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        issuer: c.issuer,
+        issueDate: c.issue_date,
+        expiryDate: c.expiry_date,
+        category: c.category,
+        description: c.description,
+        verificationUrl: c.verification_url,
+        credentialId: c.credential_id,
+        credentialUrl: c.credential_url,
+        imageUrl: c.image_url,
+        featured: c.featured,
+        status: c.status
+      }));
+    } catch (e) { return []; }
   },
 
   saveCertificate: async (cert: Certificate) => {
-    if (!supabase) return;
-    await supabase.from('certificates').upsert({
+    if (!supabase) throw new Error("Supabase connection missing.");
+    
+    // Explicit date formatting for Postgres compatibility (YYYY-MM-DD)
+    const formatSqlDate = (dateStr?: string) => {
+      if (!dateStr) return null;
+      try {
+        const d = new Date(dateStr);
+        return d.toISOString().split('T')[0];
+      } catch (e) { return null; }
+    };
+
+    const { error } = await supabase.from('certificates').upsert({
       id: cert.id,
-      slug: cert.slug,
+      slug: cert.slug || cert.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, ''),
       title: cert.title,
       issuer: cert.issuer,
-      issue_date: cert.issueDate,
-      expiry_date: cert.expiryDate,
+      issue_date: formatSqlDate(cert.issueDate) || new Date().toISOString().split('T')[0],
+      expiry_date: formatSqlDate(cert.expiryDate),
       category: cert.category,
       description: cert.description,
       verification_url: cert.verificationUrl,
@@ -206,8 +230,12 @@ export const storageService = {
       credential_url: cert.credentialUrl,
       image_url: cert.imageUrl,
       featured: cert.featured,
-      status: cert.status
+      status: cert.status,
+      deleted_at: null
     });
+    
+    if (error) throw error;
+    await storageService.logAudit('CERT_PERSIST', `Registered: ${cert.title}`);
   },
 
   deleteCertificate: async (id: string) => {

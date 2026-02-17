@@ -58,6 +58,12 @@ export interface Project {
   updatedAt?: string;
   aiContext?: string;
   lastAiSync?: string;
+  // New technical deep-dive fields
+  architectureImpact?: string;
+  scaleStrategyTitle?: string;
+  scaleStrategyDescription?: string;
+  latencyProfileTitle?: string;
+  latencyProfileDescription?: string;
 }
 
 export interface MainTag {

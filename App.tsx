@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Briefcase, Settings, FileText, Award, LogOut, Loader2, Key, Lock, MessageSquare, LayoutDashboard
+  Menu, X, Briefcase, FileText, Award, LogOut, Loader2, MessageSquare, LayoutDashboard
 } from 'lucide-react';
 
 // Pages
@@ -90,60 +91,85 @@ const App: React.FC = () => {
     navigate('/');
   };
 
-  if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-cyan-500" size={40} /></div>;
+  if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-cyan-500" size={32} /></div>;
 
   const navLinks = [
-    { name: 'Projects', path: '/projects', icon: <Briefcase size={18} /> },
-    { name: 'Resume', path: '/resume', icon: <FileText size={18} /> },
-    { name: 'Certificates', path: '/certificates', icon: <Award size={18} /> },
-    { name: 'AI Assistant', path: '/chat', icon: <MessageSquare size={18} /> },
+    { name: 'Projects', path: '/projects' },
+    { name: 'Resume', path: '/resume' },
+    { name: 'Certificates', path: '/certificates' },
+    { name: 'AI', path: '/chat' },
   ];
 
+  const isHome = location.pathname === '/';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 selection:bg-cyan-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-400 selection:bg-cyan-500/30 overflow-x-hidden font-sans">
       <CloudBackground />
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
-          <Link to="/" className="text-white font-black uppercase tracking-tighter text-xl">
-            {siteConfig?.logo_line1 || 'Ranbeer'} <span className="text-cyan-400">{siteConfig?.logo_line2 || 'Raja'}</span>
+      
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isHome ? 'h-24' : 'h-20 bg-slate-950/80 backdrop-blur-xl border-b border-white/5'}`}>
+        <div className="max-w-7xl mx-auto px-6 h-full flex justify-between items-center">
+          <Link to="/" className="flex flex-col group">
+            <span className="text-white font-extrabold text-lg uppercase tracking-tight leading-none">
+              {siteConfig?.logo_line1 || 'Ranbeer'}
+            </span>
+            <span className="text-cyan-500 font-medium text-[11px] uppercase tracking-[0.2em] leading-tight">
+              {siteConfig?.logo_line2 || 'Raja'}
+            </span>
           </Link>
-          <div className="hidden md:flex items-center space-x-8">
+
+          <div className="hidden md:flex items-center space-x-10">
             {navLinks.map((l) => (
-              <Link key={l.path} to={l.path} className={`text-xs font-bold uppercase tracking-widest hover:text-white transition-colors flex items-center space-x-2 ${location.pathname === l.path ? 'text-white' : 'text-slate-500'}`}>
-                {l.icon}<span>{l.name}</span>
+              <Link 
+                key={l.path} 
+                to={l.path} 
+                className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-premium hover:text-white ${location.pathname === l.path ? 'text-white' : 'text-slate-500'}`}
+              >
+                {l.name}
               </Link>
             ))}
             {isAdmin && (
-              <div className="flex items-center space-x-4 border-l border-white/10 pl-8">
-                <Link to="/admin" className="text-cyan-400 hover:text-cyan-300 transition-colors" title="Dashboard"><LayoutDashboard size={20} /></Link>
-                <button onClick={handleLogout} className="text-red-400 hover:text-red-300 transition-colors"><LogOut size={20} /></button>
+              <div className="flex items-center space-x-6 border-l border-white/10 pl-6 ml-2">
+                <Link to="/admin" className="text-cyan-400 hover:text-white transition-premium"><LayoutDashboard size={18} /></Link>
+                <button onClick={handleLogout} className="text-slate-500 hover:text-red-400 transition-premium"><LogOut size={18} /></button>
               </div>
             )}
           </div>
-          <button className="md:hidden p-2 text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}</button>
+
+          <button className="md:hidden text-white p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </nav>
 
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-40 bg-slate-950 pt-24 px-4 md:hidden">
-            <div className="space-y-4">
-              {navLinks.map((l) => (
-                <Link key={l.path} to={l.path} onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-white font-bold uppercase tracking-widest text-sm">
-                  {l.icon}<span>{l.name}</span>
-                </Link>
-              ))}
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 bg-slate-900 border border-white/5 rounded-2xl text-cyan-400 font-bold uppercase tracking-widest text-sm">
-                  <LayoutDashboard size={18} /><span>Dashboard</span>
-                </Link>
-              )}
-            </div>
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }} 
+            className="fixed inset-0 z-40 bg-slate-950 flex flex-col justify-center items-center space-y-8 md:hidden p-6"
+          >
+            {navLinks.map((l) => (
+              <Link 
+                key={l.path} 
+                to={l.path} 
+                onClick={() => setMobileMenuOpen(false)} 
+                className="text-2xl font-black uppercase tracking-widest text-white hover:text-cyan-400"
+              >
+                {l.name}
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-cyan-400 text-xl font-bold uppercase tracking-widest">
+                Dashboard
+              </Link>
+            )}
+            <button onClick={() => setMobileMenuOpen(false)} className="mt-12 text-slate-500"><X size={32} /></button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <main className="pt-20">
+      <main>
         <Routes>
           <Route path="/" element={<Home projects={projects} config={siteConfig} />} />
           <Route path="/projects" element={<Projects projects={projects} />} />
@@ -163,10 +189,23 @@ const App: React.FC = () => {
         </Routes>
       </main>
 
-      <footer className="py-12 border-t border-white/5 mt-24">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600">
-            &copy; {new Date().getFullYear()} {siteConfig?.logo_line1 || 'Ranbeer'} {siteConfig?.logo_line2 || 'Raja'}.
+      <footer className="py-20 border-t border-white/5 bg-slate-950/50">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col items-center md:items-start">
+            <span className="text-white font-black uppercase tracking-tighter text-lg">
+              {siteConfig?.logo_line1} {siteConfig?.logo_line2}
+            </span>
+            <span className="text-[10px] text-slate-600 font-mono uppercase tracking-[0.3em] mt-1">
+              Building the physical & digital frontier
+            </span>
+          </div>
+          <div className="flex space-x-8 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <a href={siteConfig?.social_links.github} className="hover:text-white transition-premium">GitHub</a>
+            <a href={siteConfig?.social_links.linkedin} className="hover:text-white transition-premium">LinkedIn</a>
+            <a href={`mailto:${siteConfig?.contact_email}`} className="hover:text-white transition-premium">Email</a>
+          </div>
+          <p className="text-[9px] font-mono text-slate-700">
+            &copy; {new Date().getFullYear()} REPOSITORY SYSTEM
           </p>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, LayoutGrid, List, ArrowUpRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, LayoutGrid, List, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Project, ProjectCategory } from '../types';
 
@@ -27,51 +27,51 @@ const Projects: React.FC<ProjectsProps> = ({ projects }) => {
   }, [projects, searchQuery, selectedCategory]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-        <div className="max-w-xl">
-          <h1 className="text-4xl font-bold text-white mb-4">Engineering Catalog</h1>
-          <p className="text-slate-400 text-lg">
-            A comprehensive look at the systems, platforms, and research initiatives I've led over the past decade.
+    <div className="max-w-7xl mx-auto px-6 py-24">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12 mb-20">
+        <div className="max-w-2xl space-y-6">
+          <h1 className="text-6xl font-black text-white uppercase tracking-tighter">System Index</h1>
+          <p className="text-slate-400 text-lg leading-relaxed">
+            A technical archive of platforms, mechanical systems, and research deployments across the embedded and digital frontier.
           </p>
         </div>
-        <div className="flex space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+        <div className="flex p-1 bg-slate-900/50 border border-white/5 rounded-xl">
           <button 
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded ${viewMode === 'grid' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`p-3 rounded-lg transition-premium ${viewMode === 'grid' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
             <LayoutGrid size={18} />
           </button>
           <button 
             onClick={() => setViewMode('list')}
-            className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`p-3 rounded-lg transition-premium ${viewMode === 'list' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
             <List size={18} />
           </button>
         </div>
       </div>
 
-      {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 mb-12 items-center">
-        <div className="relative w-full md:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-6 mb-16 items-center border-b border-white/5 pb-12">
+        <div className="relative w-full md:max-w-md group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-400 transition-premium" size={16} />
           <input 
             type="text" 
-            placeholder="Search stack, keywords, or title..."
+            placeholder="Search registry..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
+            className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-12 pr-6 py-4 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-premium placeholder:text-slate-600"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto w-full no-scrollbar pb-2 md:pb-0">
+        <div className="flex gap-2 overflow-x-auto w-full no-scrollbar px-1">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+              className={`whitespace-nowrap px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-premium border ${
                 selectedCategory === cat 
-                  ? 'bg-white border-white text-slate-950 font-bold' 
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-white border-white text-black shadow-lg shadow-white/5' 
+                  : 'bg-transparent border-white/5 text-slate-500 hover:border-white/20 hover:text-white'
               }`}
             >
               {cat}
@@ -80,77 +80,92 @@ const Projects: React.FC<ProjectsProps> = ({ projects }) => {
         </div>
       </div>
 
-      {/* Projects Grid/List */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map(project => (
-            <motion.div
-              layout
-              key={project.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition-colors group"
-            >
-              <Link to={`/projects/${project.slug}`}>
-                <div className="aspect-video relative overflow-hidden">
-                  <img src={project.thumbnail} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-4 right-4 px-2 py-1 bg-slate-950/80 backdrop-blur rounded text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
-                    {project.category}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">{project.title}</h3>
-                  <p className="text-slate-400 text-sm mb-4 line-clamp-2">{project.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {project.techStack.slice(0, 3).map(tech => (
-                      <span key={tech} className="text-[10px] bg-slate-800 text-slate-500 px-2 py-1 rounded">
-                        {tech}
+      {/* Results */}
+      <AnimatePresence mode="popLayout">
+        {viewMode === 'grid' ? (
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
+          >
+            {filteredProjects.map(project => (
+              <motion.div
+                layout
+                key={project.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="group flex flex-col h-full"
+              >
+                <Link to={`/projects/${project.slug}`} className="flex flex-col h-full space-y-6">
+                  <div className="aspect-[4/3] relative overflow-hidden rounded-2xl bg-slate-900 border border-white/5">
+                    <img 
+                      src={project.thumbnail} 
+                      alt={project.title} 
+                      className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" 
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest px-2 py-1 bg-slate-950/80 backdrop-blur rounded border border-cyan-500/20">
+                        {project.category}
                       </span>
-                    ))}
+                    </div>
                   </div>
-                  <div className="flex items-center text-cyan-400 text-xs font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-                    View Architecture <ArrowUpRight size={14} className="ml-1" />
+                  <div className="flex-grow space-y-3">
+                    <h3 className="text-xl font-extrabold text-white uppercase tracking-tight group-hover:text-cyan-400 transition-premium">
+                      {project.title}
+                    </h3>
+                    <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
+                      {project.description}
+                    </p>
                   </div>
+                  <div className="flex items-center text-cyan-500 text-[10px] font-black uppercase tracking-widest group-hover:translate-x-1 transition-premium">
+                    Deployment Details <ArrowUpRight size={14} className="ml-2" />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div 
+            layout
+            className="space-y-6"
+          >
+            {filteredProjects.map(project => (
+              <motion.div
+                layout
+                key={project.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="group bg-slate-900/30 border border-white/5 p-8 rounded-2xl flex flex-col md:flex-row items-center gap-10 hover:border-white/10 hover:bg-slate-900/50 transition-premium"
+              >
+                <div className="w-full md:w-56 aspect-[16/10] rounded-xl overflow-hidden shrink-0 border border-white/5 bg-slate-950">
+                  <img src={project.thumbnail} alt={project.title} className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-premium" />
                 </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredProjects.map(project => (
-            <motion.div
-              layout
-              key={project.id}
-              className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6 hover:border-slate-700 transition-colors group"
-            >
-              <div className="w-full md:w-48 aspect-video rounded-lg overflow-hidden shrink-0">
-                <img src={project.thumbnail} alt={project.title} className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-grow">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold text-cyan-500">{project.category}</span>
-                  <span className="text-slate-700">|</span>
-                  <span className="text-[10px] text-slate-500 uppercase">{project.techStack.join(', ')}</span>
+                <div className="flex-grow space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-[9px] font-black text-cyan-500 uppercase tracking-widest">{project.category}</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-800"></span>
+                    <span className="text-[9px] text-slate-600 font-mono uppercase truncate max-w-[200px]">{project.techStack.join(' // ')}</span>
+                  </div>
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter group-hover:text-cyan-400 transition-premium">{project.title}</h3>
+                  <p className="text-slate-500 text-sm max-w-3xl leading-relaxed">{project.description}</p>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
-                <p className="text-slate-400 text-sm max-w-2xl">{project.description}</p>
-              </div>
-              <Link to={`/projects/${project.slug}`} className="px-6 py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors shrink-0">
-                Details
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                <Link to={`/projects/${project.slug}`} className="px-8 py-3 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white hover:text-black transition-premium shadow-lg">
+                  Analyze
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {filteredProjects.length === 0 && (
-        <div className="py-24 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-full mb-6">
-            <Search className="text-slate-600" size={32} />
+        <div className="py-40 text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-900/50 rounded-full mb-4 border border-white/5">
+            <Search className="text-slate-700" size={32} />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">No systems found</h3>
-          <p className="text-slate-400">Try adjusting your filters or search query.</p>
+          <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Zero Nodes Found</h3>
+          <p className="text-slate-500 text-sm">Expand search parameters or clear filters.</p>
         </div>
       )}
     </div>
