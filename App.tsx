@@ -19,6 +19,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AiInspector from './pages/admin/AiInspector';
 import Resume from './pages/Resume';
 import Certificates from './pages/Certificates';
+import Thanks from './pages/Thanks';
 import CloudBackground from './components/ui/CloudBackground';
 
 // Services
@@ -173,6 +174,7 @@ const App: React.FC = () => {
           <Route path="/chat" element={<ChatAssistant projects={projects} blogs={blogs} />} />
           <Route path="/resume" element={<Resume experience={experience} config={siteConfig} />} />
           <Route path="/certificates" element={<Certificates certificates={certificates} />} />
+          <Route path="/thanks" element={<Thanks />} />
           <Route path="/login" element={<Login onLoginSuccess={loadData} />} />
           
           <Route path="/admin" element={<AdminGuard><AdminDashboard projects={projects} /></AdminGuard>} />

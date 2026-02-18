@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Trash2, Star, ChevronLeft, X, Loader2, Save, Layout, Settings, 
   Layers, BarChart3, Globe, Command, Zap, Activity, Cpu, Server, Shield, 
-  Terminal, Tag, Image as ImageIcon, Link as LinkIcon
+  Terminal, Tag, Image as ImageIcon, Link as LinkIcon, Github
 } from 'lucide-react';
 import { Project, ProjectCategory, MainTag, TechStackTag, SpecCategory, ProjectFeatureBlock, ProjectDeploymentSpec } from '../../types';
 import { Link } from 'react-router-dom';
@@ -272,6 +273,24 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                         </div>
                       </div>
                       
+                      {/* Prominent GitHub URL Field */}
+                      <div className="p-8 bg-slate-950 rounded-3xl border border-cyan-500/20 shadow-lg space-y-4">
+                        <label className="text-[11px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                          <Github size={16} /> GitHub Repository Link (Public View)
+                        </label>
+                        <div className="relative">
+                           <LinkIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700" size={18} />
+                           <input 
+                             type="text" 
+                             value={editingProject.githubUrl || ''} 
+                             onChange={e => setEditingProject({...editingProject, githubUrl: e.target.value})} 
+                             placeholder="https://github.com/TechRanbeer/your-project"
+                             className="w-full bg-slate-900 border border-white/10 rounded-2xl p-6 pl-14 text-white focus:border-cyan-500/50 outline-none transition-premium font-medium" 
+                           />
+                        </div>
+                        <p className="text-[10px] text-slate-600 font-mono italic">Enter the full URL. This will be linked prominently on the project detail page.</p>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-12">
                         <div className="space-y-4">
                           <label className="text-[11px] font-black text-slate-600 uppercase tracking-widest">Thumbnail Asset URL</label>
@@ -281,10 +300,10 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                           </div>
                         </div>
                         <div className="space-y-4">
-                          <label className="text-[11px] font-black text-slate-600 uppercase tracking-widest">Lead Repository</label>
+                          <label className="text-[11px] font-black text-slate-600 uppercase tracking-widest">Live Deployment Link</label>
                           <div className="relative">
-                             <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
-                             <input type="text" value={editingProject.githubUrl} onChange={e => setEditingProject({...editingProject, githubUrl: e.target.value})} className="w-full bg-slate-950 border border-white/5 rounded-2xl p-6 pl-12 text-white focus:border-cyan-500/50 outline-none transition-premium" />
+                             <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
+                             <input type="text" value={editingProject.liveUrl || ''} onChange={e => setEditingProject({...editingProject, liveUrl: e.target.value})} className="w-full bg-slate-950 border border-white/5 rounded-2xl p-6 pl-12 text-white focus:border-cyan-500/50 outline-none transition-premium" />
                           </div>
                         </div>
                       </div>

@@ -1,11 +1,13 @@
 
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { Project, Blog } from "../types";
-import { getEnv } from "./env";
 
 const SYSTEM_PROMPT = `You are Ranbeer Raja's Personal Engineering AI. 
 You provide deep technical insights into his projects and career philosophy.
-Respond in the first person. Be professional, direct, and elite.
+Respond in the first person. Be professional, formal, and technical. 
+
+Your goal is to be a direct and elite resource. Provide concise yet information-dense answers.
+Structure your responses clearly with paragraphs or lists. Use bold text (**like this**) for key technical terms or emphasis.
 
 CAREER CONTEXT:
 - Student at KJ Somaiya College, India.
@@ -17,7 +19,8 @@ KNOWLEDGE BASE:
 `;
 
 export class GeminiService {
-  private modelName = 'gemini-3-pro-preview';
+  // Switched to gemini-3-flash-preview for speed and efficiency
+  private modelName = 'gemini-3-flash-preview';
 
   async generatePortfolioResponse(
     userMessage: string, 
@@ -25,7 +28,6 @@ export class GeminiService {
     projects: Project[],
     blogs: Blog[]
   ) {
-    // Correctly using process.env.API_KEY directly for initialization as per SDK guidelines
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const contextPrompt = SYSTEM_PROMPT.replace('{{PROJECTS_JSON}}', JSON.stringify({
@@ -51,31 +53,30 @@ export class GeminiService {
         ],
         config: {
           systemInstruction: contextPrompt,
-          temperature: 0.7,
-          topP: 0.95,
-          topK: 64
+          temperature: 0.5, // Lower temperature for more formal/precise output
+          topP: 0.9,
+          topK: 40
         }
       });
-      // Correct extraction of text property from GenerateContentResponse
       return response.text || "I couldn't generate a response.";
     } catch (error) {
       console.error("Gemini Error:", error);
-      return "My cognitive engine is currently undergoing maintenance. Please try again shortly.";
+      return "System overhead exceeded. Please re-initiate the query.";
     }
   }
 
   async generateTechnicalSummary(project: Project) {
-    // Correctly using process.env.API_KEY directly for initialization as per SDK guidelines
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Write a high-level, 1-paragraph technical engineering abstract for: ${project.title}. Focus on system design and architectural challenges.`;
+    const prompt = `Provide a formal, high-level technical engineering abstract for the following project: ${project.title}. 
+    Focus on architectural integrity and specific system design challenges. 
+    Keep it strictly professional and concise.`;
     
     try {
       const response = await ai.models.generateContent({ 
         model: this.modelName, 
         contents: prompt 
       });
-      // Correct extraction of text property from GenerateContentResponse
-      return response.text || "No summary available.";
+      return response.text || "Technical abstract currently unavailable.";
     } catch (e) {
       return "Technical abstract currently unavailable.";
     }

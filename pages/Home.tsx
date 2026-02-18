@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { 
   ArrowUpRight, Cpu, Layers, Mail, LucideProps, Terminal, ShieldCheck, 
@@ -26,6 +26,13 @@ const itemVariants: Variants = {
 
 const ContactModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [state, handleSubmit] = useForm("mjgerdvp");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (state.succeeded) {
+      navigate('/thanks');
+    }
+  }, [state.succeeded, navigate]);
 
   return (
     <AnimatePresence>
@@ -51,101 +58,83 @@ const ContactModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
               <X size={28} />
             </button>
 
-            {state.succeeded ? (
-              <div className="text-center py-16 space-y-8">
-                <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500">
-                  <Check size={48} />
-                </div>
-                <div>
-                  <h3 className="text-4xl font-black text-white uppercase tracking-tighter">Transmission Successful</h3>
-                  <p className="text-slate-400 font-medium mt-4 max-w-sm mx-auto">Your inquiry has been successfully logged. Response incoming within 24 standard hours.</p>
-                </div>
-                <button 
-                  onClick={onClose}
-                  className="px-12 py-5 bg-white text-black font-black uppercase tracking-widest text-base rounded-2xl hover:bg-cyan-400 transition-premium shadow-xl"
-                >
-                  Return to Console
-                </button>
+            <div className="space-y-10">
+              <div>
+                <h3 className="text-4xl font-black text-white uppercase tracking-tighter">Deploy Inquiry</h3>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Initialize Professional protocol</p>
               </div>
-            ) : (
-              <div className="space-y-10">
-                <div>
-                  <h3 className="text-4xl font-black text-white uppercase tracking-tighter">Deploy Inquiry</h3>
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Initialize Professional protocol</p>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label htmlFor="full-name" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Identity</label>
+                    <div className="relative">
+                      <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
+                      <input 
+                        id="full-name" 
+                        type="text" 
+                        name="name" 
+                        required 
+                        placeholder="Full Name"
+                        className="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 pl-14 text-white focus:border-cyan-500/50 outline-none transition-premium text-sm font-medium"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Endpoint</label>
+                    <div className="relative">
+                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
+                      <input 
+                        id="email" 
+                        type="email" 
+                        name="email" 
+                        required 
+                        placeholder="Email Address"
+                        className="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 pl-14 text-white focus:border-cyan-500/50 outline-none transition-premium text-sm font-medium"
+                      />
+                      <ValidationError prefix="Email" field="email" errors={state.errors} className="text-red-500 text-[10px] mt-1" />
+                    </div>
+                  </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="full-name" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Identity</label>
-                      <div className="relative">
-                        <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
-                        <input 
-                          id="full-name" 
-                          type="text" 
-                          name="name" 
-                          required 
-                          placeholder="Full Name"
-                          className="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 pl-14 text-white focus:border-cyan-500/50 outline-none transition-premium text-sm font-medium"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Endpoint</label>
-                      <div className="relative">
-                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
-                        <input 
-                          id="email" 
-                          type="email" 
-                          name="email" 
-                          required 
-                          placeholder="Email Address"
-                          className="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 pl-14 text-white focus:border-cyan-500/50 outline-none transition-premium text-sm font-medium"
-                        />
-                        <ValidationError prefix="Email" field="email" errors={state.errors} className="text-red-500 text-[10px] mt-1" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="purpose" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Mission Type</label>
-                    <select 
-                      id="purpose" 
-                      name="purpose" 
-                      required
-                      className="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 text-white focus:border-cyan-500/50 outline-none transition-premium text-sm font-bold uppercase tracking-widest"
-                    >
-                      <option value="Connect">Connection / Networking</option>
-                      <option value="Consult">Technical Consultation</option>
-                      <option value="Project">Project Collaboration</option>
-                      <option value="Career">Career Opportunity</option>
-                      <option value="Other">Other Inquiry</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Specifications</label>
-                    <textarea 
-                      id="message" 
-                      name="message" 
-                      required
-                      placeholder="Details of your vision..."
-                      className="w-full h-40 bg-slate-950 border border-white/5 rounded-2xl p-6 text-slate-300 text-sm outline-none resize-none focus:border-cyan-500/50 transition-premium leading-relaxed font-medium" 
-                    />
-                    <ValidationError prefix="Message" field="message" errors={state.errors} className="text-red-500 text-[10px] mt-1" />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={state.submitting}
-                    className="w-full py-6 bg-white text-black font-black uppercase tracking-widest text-base rounded-2xl hover:bg-cyan-400 transition-premium flex items-center justify-center gap-3 shadow-2xl disabled:opacity-50"
+                <div className="space-y-2">
+                  <label htmlFor="purpose" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Mission Type</label>
+                  <select 
+                    id="purpose" 
+                    name="purpose" 
+                    required
+                    className="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 text-white focus:border-cyan-500/50 outline-none transition-premium text-sm font-bold uppercase tracking-widest"
                   >
-                    {state.submitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={18} />}
-                    Broadcast Signal
-                  </button>
-                </form>
-              </div>
-            )}
+                    <option value="Connect">Connection / Networking</option>
+                    <option value="Consult">Technical Consultation</option>
+                    <option value="Project">Project Collaboration</option>
+                    <option value="Career">Career Opportunity</option>
+                    <option value="Other">Other Inquiry</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="message" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Specifications</label>
+                  <textarea 
+                    id="message" 
+                    name="message" 
+                    required
+                    placeholder="Details of your vision..."
+                    className="w-full h-40 bg-slate-950 border border-white/5 rounded-2xl p-6 text-slate-300 text-sm outline-none resize-none focus:border-cyan-500/50 transition-premium leading-relaxed font-medium" 
+                  />
+                  <ValidationError prefix="Message" field="message" errors={state.errors} className="text-red-500 text-[10px] mt-1" />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={state.submitting}
+                  className="w-full py-6 bg-white text-black font-black uppercase tracking-widest text-base rounded-2xl hover:bg-cyan-400 transition-premium flex items-center justify-center gap-3 shadow-2xl disabled:opacity-50"
+                >
+                  {state.submitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={18} />}
+                  Broadcast Signal
+                </button>
+              </form>
+            </div>
           </motion.div>
         </div>
       )}

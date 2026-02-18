@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Download, Briefcase, GraduationCap, Mail, MapPin, Phone, ChevronRight, Terminal, Target, BookOpen, Layers } from 'lucide-react';
+import { Download, BookOpen, Mail, MapPin, Phone, ChevronRight, Layers } from 'lucide-react';
 import { Experience, SiteConfig } from '../types';
 
 interface ResumeProps {
@@ -16,7 +17,14 @@ const Resume: React.FC<ResumeProps> = ({ experience, config }) => {
   ];
 
   const handleGeneratePDF = () => {
-    window.print();
+    // Correct way to trigger a file download from the public folder
+    const resumeUrl = '/Ranbeer_Raja_Resume.pdf';
+    const link = document.createElement('a');
+    link.href = resumeUrl;
+    link.setAttribute('download', 'Ranbeer_Raja_Resume.pdf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const formatDateRange = (start: string, end?: string, current?: boolean) => {
@@ -37,7 +45,7 @@ const Resume: React.FC<ResumeProps> = ({ experience, config }) => {
           onClick={handleGeneratePDF} 
           className="px-8 py-4 bg-white text-black font-black tracking-widest rounded-2xl hover:bg-cyan-400 transition-all uppercase text-xs shadow-2xl flex items-center gap-2"
         >
-          <Download size={18} /> Generate PDF
+          <Download size={18} /> Download CV
         </button>
       </div>
 
