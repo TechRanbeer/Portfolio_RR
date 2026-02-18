@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Github, Globe, ArrowUpRight, Cpu, MessageSquare, Layers, Server, Terminal } from 'lucide-react';
+import { ChevronLeft, Github, Globe, ArrowUpRight, Cpu, MessageSquare, Layers, Server, Terminal, Zap, Activity } from 'lucide-react';
 import { Project } from '../types';
 
 interface ProjectDetailProps {
@@ -24,15 +24,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
     return (
       <div className="py-32 text-center">
         <h2 className="text-3xl font-bold text-white mb-4">System Node Not Found</h2>
-        {/* Fixed lowercase 'link' to uppercase 'Link' from react-router-dom */}
         <Link to="/projects" className="text-cyan-400 hover:underline">Return to Catalog</Link>
       </div>
     );
   }
-
-  // Filter specs to only keep Host and Custom as requested (removing Auth and Runtime)
-  const hostSpec = project.deploymentSpecs.find(s => s.category === 'HOST');
-  const customSpecs = project.deploymentSpecs.filter(s => s.category === 'CUSTOM');
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-24">
@@ -56,7 +51,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
               <span className="text-slate-800 font-mono text-xs">/</span>
               <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">DEPLOYMENT_STABLE</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
+            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-tight">
               {project.title}
             </h1>
             <p className="text-xl text-slate-400 leading-relaxed max-w-3xl text-balance">
@@ -86,14 +81,44 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
           </div>
 
           {/* Project Details */}
-          <section className="space-y-16">
-            <div className="space-y-8">
+          <section className="space-y-20">
+            {/* Architecture Section with absolute formatting preservation */}
+            <div className="space-y-10">
               <h2 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-4">
-                <Layers className="text-cyan-500" size={24} /> System Architecture & Overview
+                <Layers className="text-cyan-500" size={24} /> System Architecture & Technical Overview
               </h2>
-              <div className="text-slate-400 text-lg leading-relaxed space-y-6">
-                <p>{project.architectureImpact || project.longDescription}</p>
+              <div 
+                className="text-slate-400 text-lg leading-relaxed whitespace-pre-wrap font-medium"
+                style={{ fontFamily: 'inherit', wordBreak: 'break-word', tabSize: 4 }}
+              >
+                {project.architectureImpact || project.longDescription}
               </div>
+            </div>
+
+            {/* Scale Strategy & Latency Profile */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {(project.scaleStrategyTitle || project.scaleStrategyDescription) && (
+                <div className="p-10 bg-slate-900/40 border border-white/5 rounded-[2.5rem] space-y-6 backdrop-blur-sm">
+                  <h3 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-3">
+                    <Activity className="text-cyan-500" size={20} /> Scale Strategy
+                  </h3>
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-bold text-white uppercase tracking-tight">{project.scaleStrategyTitle || "Node Expansion"}</h4>
+                    <p className="text-slate-400 text-sm leading-relaxed">{project.scaleStrategyDescription}</p>
+                  </div>
+                </div>
+              )}
+              {(project.latencyProfileTitle || project.latencyProfileDescription) && (
+                <div className="p-10 bg-slate-900/40 border border-white/5 rounded-[2.5rem] space-y-6 backdrop-blur-sm">
+                  <h3 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-3">
+                    <Zap className="text-cyan-500" size={20} /> Latency Profile
+                  </h3>
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-bold text-white uppercase tracking-tight">{project.latencyProfileTitle || "Inference Dynamics"}</h4>
+                    <p className="text-slate-400 text-sm leading-relaxed">{project.latencyProfileDescription}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -102,8 +127,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
         <div className="lg:col-span-4 space-y-10">
           <div className="bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-10 sticky top-32 space-y-12 backdrop-blur-md">
             
-            {/* Core Protocol Stack (Tech Stack) */}
-            <div className="space-y-6">
+            {/* Core Protocol Stack */}
+            <div className="space-y-8">
               <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-3">
                 <Cpu className="text-cyan-400" size={20} /> Core Protocol Stack
               </h3>
@@ -116,58 +141,49 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
               </div>
             </div>
 
-            {/* Infrastructure Matrix (Host + Custom) */}
-            <div className="space-y-6">
+            {/* Infrastructure Matrix */}
+            <div className="space-y-8">
                <h4 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-3">
                  <Server className="text-cyan-400" size={20} /> Infrastructure Matrix
                </h4>
                <div className="space-y-4">
-                  {hostSpec && (
-                    <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5">
-                      <div className="flex items-center gap-4">
-                        <Globe size={18} className="text-cyan-400" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">{hostSpec.label}</span>
-                      </div>
-                      <span className="text-[10px] font-mono text-cyan-500 uppercase">{hostSpec.value}</span>
-                    </div>
-                  )}
-                  {customSpecs.map((s, i) => (
+                  {project.deploymentSpecs.map((s, i) => (
                     <div key={i} className="flex items-center justify-between p-5 bg-slate-950/50 rounded-2xl border border-white/5">
                       <div className="flex items-center gap-4">
                         <Terminal size={18} className="text-slate-600" />
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</span>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400 uppercase">{s.value}</span>
+                      <span className="text-[10px] font-mono text-slate-400 uppercase text-right">{s.value}</span>
                     </div>
                   ))}
                </div>
             </div>
 
-            {/* GitHub & Repository Link */}
-            <div className="space-y-4">
-              <h4 className="text-[10px] text-slate-600 uppercase font-black tracking-[0.3em] mb-2">GitHub Repo</h4>
+            {/* GitHub Repo Access */}
+            <div className="space-y-6">
+              <h4 className="text-[10px] text-slate-600 uppercase font-black tracking-[0.3em] mb-2 px-1">GitHub Repo</h4>
               {project.githubUrl ? (
-                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-white text-black hover:bg-cyan-400 rounded-2xl transition-premium text-black group border border-white/5 shadow-2xl">
-                  <div className="flex items-center gap-4 text-black">
+                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-white text-black hover:bg-cyan-400 rounded-2xl transition-premium shadow-2xl group">
+                  <div className="flex items-center gap-5">
                     <Github size={24} />
                     <div className="flex flex-col">
                       <span className="text-[11px] font-black uppercase tracking-widest">Repository</span>
-                      <span className="text-[9px] text-slate-600 font-mono truncate max-w-[150px]">{project.githubUrl.replace('https://github.com/', '')}</span>
+                      <span className="text-[9px] text-slate-500 font-mono truncate max-w-[140px] lowercase">{project.githubUrl.split('github.com/')[1]}</span>
                     </div>
                   </div>
-                  <ArrowUpRight size={18} className="text-slate-400 group-hover:text-black transition-premium" />
+                  <ArrowUpRight size={18} className="text-slate-400 group-hover:text-black transition-all" />
                 </a>
               ) : (
                 <div className="p-6 bg-slate-900/30 rounded-2xl border border-dashed border-white/5 text-center">
-                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Private Repository</span>
+                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Private Infrastructure</span>
                 </div>
               )}
               
               {project.liveUrl && (
                 <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-cyan-600/10 hover:bg-cyan-600/20 rounded-2xl transition-premium text-cyan-400 border border-cyan-500/20 group">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-5">
                     <Globe size={24} />
-                    <span className="text-[11px] font-black uppercase tracking-widest">Live Deployment</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest">Deployment Node</span>
                   </div>
                   <ArrowUpRight size={18} />
                 </a>
@@ -175,11 +191,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
             </div>
 
             <button 
-              onClick={() => navigate('/chat', { state: { initialPrompt: `Analyze the technical architecture of ${project.title}.` } })}
+              onClick={() => navigate('/chat', { state: { initialPrompt: `Deconstruct the architectural specifications of ${project.title}.` } })}
               className="w-full py-5 bg-slate-800 text-white border border-white/10 font-black uppercase tracking-widest text-xs rounded-2xl flex items-center justify-center hover:bg-white hover:text-black transition-premium group shadow-2xl"
             >
               <MessageSquare size={18} className="mr-3" />
-              Analyze with AI
+              AI Technical Audit
             </button>
           </div>
         </div>

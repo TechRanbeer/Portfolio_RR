@@ -4,22 +4,16 @@ import { Project, Blog } from "../types";
 
 const SYSTEM_PROMPT = `You are Ranbeer Raja's Personal Engineering AI. 
 You provide deep technical insights into his projects and career philosophy.
-Respond in the first person. Be professional, formal, and technical. 
+Respond in the first person. Be professional, formal, and strictly technical.
 
 Your goal is to be a direct and elite resource. Provide concise yet information-dense answers.
 Structure your responses clearly with paragraphs or lists. Use bold text (**like this**) for key technical terms or emphasis.
 
-CAREER CONTEXT:
-- Student at KJ Somaiya College, India.
-- Expert in ARM microcontrollers, Raspberry Pi 5, and Mechanical Chassis engineering.
-- Martial Arts: Karate Black Belt (1st Dan).
-
 KNOWLEDGE BASE:
-{{PROJECTS_JSON}}
+{{PROJECTS_SUMMARY}}
 `;
 
 export class GeminiService {
-  // Switched to gemini-3-flash-preview for speed and efficiency
   private modelName = 'gemini-3-flash-preview';
 
   async generatePortfolioResponse(
@@ -30,55 +24,53 @@ export class GeminiService {
   ) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    const contextPrompt = SYSTEM_PROMPT.replace('{{PROJECTS_JSON}}', JSON.stringify({
-      projects: projects.map(p => ({ 
-        title: p.title, 
-        tech: p.techStack, 
-        description: p.description,
-        extra_context: p.aiContext || ''
-      })),
-      blogs: blogs.map(b => ({
-        title: b.title,
-        excerpt: b.excerpt,
-        tags: b.tags
-      }))
-    }));
+    // SURGICAL CONTEXT: Only send essential technical headers for maximum speed
+    const projectsSummary = projects.slice(0, 15).map(p => 
+      `NODE: ${p.title}\nPROTOCOLS: ${p.techStack.join(', ')}\nABSTRACT: ${p.description}\nARCH: ${p.architectureImpact || 'SECURE_VOID'}`
+    ).join('\n\n');
+
+    const contextPrompt = SYSTEM_PROMPT.replace('{{PROJECTS_SUMMARY}}', projectsSummary);
 
     try {
+      // KEEP HISTORY LIGHT: Only last 6 messages to reduce token overhead and latency
+      const limitedHistory = history.slice(-6);
+
       const response: GenerateContentResponse = await ai.models.generateContent({
         model: this.modelName,
         contents: [
-          ...history,
+          ...limitedHistory,
           { role: 'user', parts: [{ text: userMessage }] }
         ],
         config: {
           systemInstruction: contextPrompt,
-          temperature: 0.5, // Lower temperature for more formal/precise output
-          topP: 0.9,
-          topK: 40
+          temperature: 0.2, // Low for faster, more predictable output
+          topP: 0.85,
+          topK: 40,
+          maxOutputTokens: 1024
         }
       });
-      return response.text || "I couldn't generate a response.";
+
+      return response.text || "PROTOCOL_NULL: Re-query signal.";
     } catch (error) {
-      console.error("Gemini Error:", error);
-      return "System overhead exceeded. Please re-initiate the query.";
+      console.error("AI_INFERENCE_FAULT:", error);
+      return "SIGNAL_LOST: Connection to the engineering core experienced a high-latency timeout. Retrying initialization recommended.";
     }
   }
 
   async generateTechnicalSummary(project: Project) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Provide a formal, high-level technical engineering abstract for the following project: ${project.title}. 
-    Focus on architectural integrity and specific system design challenges. 
-    Keep it strictly professional and concise.`;
+    const prompt = `Perform a high-level technical audit and synthesis for the system node: ${project.title}. 
+    Focus exclusively on architectural integrity and scalability. Provide a formal abstract.`;
     
     try {
       const response = await ai.models.generateContent({ 
         model: this.modelName, 
-        contents: prompt 
+        contents: prompt,
+        config: { temperature: 0.1 }
       });
-      return response.text || "Technical abstract currently unavailable.";
+      return response.text || "TECHNICAL_ABSTRACT_UNAVAILABLE";
     } catch (e) {
-      return "Technical abstract currently unavailable.";
+      return "SYNTHESIS_FAULT: Manual override required.";
     }
   }
 }
