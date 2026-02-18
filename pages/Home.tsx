@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { 
@@ -274,7 +275,7 @@ const Home: React.FC<HomeProps> = ({ projects, config }) => {
                     <img 
                       src={p.thumbnail} 
                       alt={p.title} 
-                      className="w-full h-full object-cover transition-all duration-1000 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
+                      className="w-full h-full object-cover object-center transition-all duration-1000 opacity-80 group-hover:opacity-100 group-hover:scale-105" 
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="absolute top-10 right-10">

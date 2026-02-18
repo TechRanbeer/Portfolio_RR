@@ -62,7 +62,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
           {/* Media Showcase */}
           <div className="space-y-6">
             <div className="aspect-[16/9] rounded-[2.5rem] overflow-hidden border border-white/5 bg-slate-900 shadow-2xl relative group">
-              <img src={project.images[activeImage] || project.thumbnail} alt={project.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-premium duration-1000" />
+              <img src={project.images[activeImage] || project.thumbnail} alt={project.title} className="w-full h-full object-cover object-center transition-premium duration-1000" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent"></div>
             </div>
             {project.images.length > 1 && (
@@ -71,9 +71,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects }) => {
                   <button 
                     key={idx}
                     onClick={() => setActiveImage(idx)}
-                    className={`w-40 aspect-video shrink-0 rounded-2xl overflow-hidden border-2 transition-premium ${activeImage === idx ? 'border-cyan-500 scale-105 shadow-lg shadow-cyan-500/20' : 'border-white/5 opacity-40 hover:opacity-100'}`}
+                    className={`w-40 aspect-video shrink-0 rounded-2xl overflow-hidden border-2 transition-premium ${activeImage === idx ? 'border-cyan-500 scale-105 shadow-lg shadow-cyan-500/20' : 'border-white/5 opacity-80 hover:opacity-100'}`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full object-cover object-center" />
                   </button>
                 ))}
               </div>

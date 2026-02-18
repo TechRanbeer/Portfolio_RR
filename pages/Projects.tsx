@@ -103,9 +103,9 @@ const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                     <img 
                       src={project.thumbnail} 
                       alt={project.title} 
-                      className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000" 
+                      className="w-full h-full object-cover object-center opacity-80 group-hover:opacity-100 transition-all duration-1000" 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
                   <div className="flex-grow space-y-2">
                     <span className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest">{project.category}</span>
@@ -138,7 +138,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                 className="group bg-slate-900/20 border border-white/5 p-6 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 hover:border-white/10 hover:bg-slate-900/40 transition-premium"
               >
                 <div className="w-full md:w-56 aspect-[16/10] rounded-xl overflow-hidden shrink-0 border border-white/5 bg-slate-950">
-                  <img src={project.thumbnail} alt={project.title} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
+                  <img src={project.thumbnail} alt={project.title} className="w-full h-full object-cover object-center opacity-80 group-hover:opacity-100 transition-all duration-700" />
                 </div>
                 <div className="flex-grow space-y-2">
                   <div className="flex items-center space-x-3 text-[10px] font-bold uppercase tracking-widest">

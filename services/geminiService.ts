@@ -23,6 +23,7 @@ export class GeminiService {
     blogs: Blog[]
   ) {
     // Initializing with named parameter as required by SDK
+    // The API key is obtained exclusively from process.env.API_KEY per project protocols.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     // SURGICAL CONTEXT: Only send essential technical headers for maximum speed
@@ -33,28 +34,44 @@ export class GeminiService {
     const contextPrompt = SYSTEM_PROMPT.replace('{{PROJECTS_SUMMARY}}', projectsSummary);
 
     try {
-      // KEEP HISTORY LIGHT: Only last 6 messages to reduce token overhead and latency
-      const limitedHistory = history.slice(-6);
+      /**
+       * CRITICAL ARCHITECTURAL REQUIREMENT: 
+       * Gemini API multi-turn history must strictly start with a 'user' turn.
+       * We filter the provided history to strip leading assistant greetings
+       * and ensure valid alternating turn order.
+       */
+      let chatHistory = [...history].filter(h => h.parts[0].text.trim() !== "");
+      
+      // Trim history until it starts with a 'user' turn to avoid 400 Bad Request errors
+      while (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
+        chatHistory.shift();
+      }
+      
+      // Maintain context while optimizing for latency and token cost
+      chatHistory = chatHistory.slice(-8);
 
-      const response: GenerateContentResponse = await ai.models.generateContent({
+      // Using the dedicated Chat API for superior turn management and state consistency
+      const chat = ai.chats.create({
         model: this.modelName,
-        contents: [
-          ...limitedHistory,
-          { role: 'user', parts: [{ text: userMessage }] }
-        ],
         config: {
           systemInstruction: contextPrompt,
-          temperature: 0.2, // Low for faster, more predictable output
-          topP: 0.85,
+          temperature: 0.25,
+          topP: 0.9,
           topK: 40,
           maxOutputTokens: 1024
-        }
+        },
+        history: chatHistory
+      });
+
+      // sendMessage handles the runtime injection of the new user prompt into the session history
+      const response: GenerateContentResponse = await chat.sendMessage({
+        message: userMessage
       });
 
       return response.text || "PROTOCOL_NULL: Re-query signal.";
     } catch (error) {
       console.error("AI_INFERENCE_FAULT:", error);
-      return "SIGNAL_LOST: Connection to the engineering core experienced a high-latency timeout. Retrying initialization recommended.";
+      return "SIGNAL_LOST: Connection to the engineering core experienced a high-latency timeout or validation fault. Ensure history starts with a user turn.";
     }
   }
 
