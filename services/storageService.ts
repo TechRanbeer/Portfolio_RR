@@ -49,6 +49,7 @@ const mapProjectFromDb = (d: any): Project => ({
   role: d.role,
   teamSize: d.team_size,
   metaTitle: d.meta_title,
+  // Fix: Changed meta_description to metaDescription to match Project type definition
   metaDescription: d.meta_description,
   keywords: d.keywords || [],
   createdAt: d.created_at,
@@ -97,6 +98,7 @@ export const storageService = {
   saveProject: async (project: Project) => {
     if (!supabase) throw new Error("Supabase connection missing.");
 
+    // Update main project entry
     const { error: projectError } = await supabase.from('projects').upsert({
       id: project.id,
       slug: project.slug,
@@ -131,36 +133,35 @@ export const storageService = {
 
     if (projectError) throw projectError;
 
-    // Fix: Ensure all tags exist in the master tech_stack_tags table before linking
-    if (project.techStack.length > 0) {
+    // Sync tech stack relation
+    if (project.techStack) {
+      // 1. Ensure all tags exist in tech_stack_tags
       for (const tagName of project.techStack) {
-        if (!tagName.trim()) continue;
-        await supabase.from('tech_stack_tags').upsert(
-          { name: tagName.trim() }, 
-          { onConflict: 'name' }
-        );
+        const { data: existing } = await supabase.from('tech_stack_tags').select('id').eq('name', tagName).single();
+        if (!existing) {
+          await supabase.from('tech_stack_tags').insert({ name: tagName, category: 'general' });
+        }
       }
 
-      const { data: tagData } = await supabase.from('tech_stack_tags').select('id, name').in('name', project.techStack);
-      
+      // 2. Delete existing associations
       await supabase.from('project_tech_stack').delete().eq('project_id', project.id);
-      
+
+      // 3. Create new associations
+      const { data: tagData } = await supabase.from('tech_stack_tags').select('id, name').in('name', project.techStack);
       if (tagData && tagData.length > 0) {
         await supabase.from('project_tech_stack').insert(
           tagData.map(t => ({ project_id: project.id, tech_stack_id: t.id }))
         );
       }
-    } else {
-      await supabase.from('project_tech_stack').delete().eq('project_id', project.id);
     }
 
     // Sync specs
     await supabase.from('project_deployment_specs').delete().eq('project_id', project.id);
-    if (project.deploymentSpecs.length > 0) {
+    if (project.deploymentSpecs && project.deploymentSpecs.length > 0) {
       await supabase.from('project_deployment_specs').insert(
         project.deploymentSpecs.map((s, idx) => ({
           project_id: project.id,
-          category: s.category,
+          category: s.category || 'CUSTOM',
           label: s.label,
           value: s.value,
           order_index: idx
@@ -170,7 +171,7 @@ export const storageService = {
 
     // Sync feature blocks
     await supabase.from('project_feature_blocks').delete().eq('project_id', project.id);
-    if (project.featureBlocks.length > 0) {
+    if (project.featureBlocks && project.featureBlocks.length > 0) {
       await supabase.from('project_feature_blocks').insert(
         project.featureBlocks.map((b, idx) => ({
           project_id: project.id,

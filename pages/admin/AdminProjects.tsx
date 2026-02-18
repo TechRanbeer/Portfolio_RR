@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Trash2, Star, ChevronLeft, X, Loader2, Save, Layers, 
@@ -23,6 +23,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
   const [activeTab, setActiveTab] = useState<'base' | 'architecture' | 'protocols' | 'infrastructure' | 'metadata'>('base');
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [newTag, setNewTag] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   const startEdit = (p: Project | null) => {
     const projectData = p ? (JSON.parse(JSON.stringify(p)) as Project) : {
@@ -68,13 +69,14 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
 
   const addTechWord = () => {
     if (!editingProject || !newTag.trim()) return;
-    if (editingProject.techStack.includes(newTag.trim())) {
+    const cleanTag = newTag.trim();
+    if (editingProject.techStack.includes(cleanTag)) {
       setNewTag('');
       return;
     }
     setEditingProject({
       ...editingProject,
-      techStack: [...editingProject.techStack, newTag.trim()]
+      techStack: [...editingProject.techStack, cleanTag]
     });
     setNewTag('');
   };
@@ -87,22 +89,16 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
     });
   };
 
-  const addImageNode = () => {
-    if (!editingProject) return;
+  const addImage = () => {
+    if (!editingProject || !newImageUrl.trim()) return;
     setEditingProject({
       ...editingProject,
-      images: [...editingProject.images, '']
+      images: [...(editingProject.images || []), newImageUrl.trim()]
     });
+    setNewImageUrl('');
   };
 
-  const updateImageNode = (idx: number, val: string) => {
-    if (!editingProject) return;
-    const newImgs = [...editingProject.images];
-    newImgs[idx] = val;
-    setEditingProject({...editingProject, images: newImgs});
-  };
-
-  const removeImageNode = (idx: number) => {
+  const removeImage = (idx: number) => {
     if (!editingProject) return;
     setEditingProject({
       ...editingProject,
@@ -154,10 +150,10 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="flex justify-between items-center mb-16">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Registry Console</h1>
+          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">System Registry</h1>
           <div className="flex items-center gap-2 text-[10px] font-mono text-slate-600 uppercase tracking-widest">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            System Status: Monitoring
+            Control Terminal Active
           </div>
         </div>
         <button onClick={() => startEdit(null)} className="flex items-center gap-3 px-8 py-4 bg-white text-black text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-cyan-400 transition-all shadow-xl">
@@ -171,7 +167,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
             <input 
               type="text" 
-              placeholder="Search registry index..." 
+              placeholder="Search by ID or Category..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-950 border border-white/5 rounded-xl pl-12 pr-4 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-500/30 transition-all font-mono"
@@ -235,10 +231,10 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
               
               <div className="px-10 py-8 border-b border-white/5 bg-slate-950/30 flex justify-between items-center">
                 <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/5 rounded-xl text-cyan-500 shadow-inner"><Command size={24} /></div>
+                  <div className="p-4 bg-white/5 rounded-xl text-cyan-500"><Command size={24} /></div>
                   <div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Node Customization</h2>
-                    <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">System Identifier: {editingProject.id}</p>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Project Node Customization</h2>
+                    <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Active System ID: {editingProject.id}</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -256,7 +252,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                     { id: 'architecture', label: 'System Architecture', icon: <AlignLeft size={14} /> },
                     { id: 'protocols', label: 'Protocol Stack', icon: <Cpu size={14} /> },
                     { id: 'infrastructure', label: 'Infra Matrix', icon: <Server size={14} /> },
-                    { id: 'metadata', label: 'Registry Meta', icon: <Globe size={14} /> }
+                    { id: 'metadata', label: 'System Metadata', icon: <Globe size={14} /> }
                   ].map(tab => (
                     <button 
                       key={tab.id} 
@@ -269,12 +265,11 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                 </div>
 
                 <div className="flex-grow overflow-y-auto p-12 custom-scrollbar bg-slate-900/10 space-y-16">
-                  
                   {activeTab === 'base' && (
                     <div className="space-y-12 animate-in fade-in duration-500">
                       <div className="grid grid-cols-2 gap-10">
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Node Name</label>
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">System Name</label>
                           <input type="text" value={editingProject.title} onChange={e => setEditingProject({...editingProject, title: e.target.value, slug: e.target.value.toLowerCase().replace(/ /g, '-')})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-bold" />
                         </div>
                         <div className="space-y-4">
@@ -287,14 +282,14 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
 
                       <div className="grid grid-cols-2 gap-10">
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Thumbnail Endpoint</label>
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Main Thumbnail Endpoint</label>
                           <div className="relative">
                             <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-800" size={14} />
                             <input type="text" value={editingProject.thumbnail} onChange={e => setEditingProject({...editingProject, thumbnail: e.target.value})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 pl-14 text-white focus:border-cyan-500/50 outline-none font-mono text-xs" />
                           </div>
                         </div>
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">GitHub Repository</label>
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Repository Path</label>
                           <div className="relative">
                             <Github className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-800" size={14} />
                             <input type="text" value={editingProject.githubUrl || ''} onChange={e => setEditingProject({...editingProject, githubUrl: e.target.value})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 pl-14 text-white focus:border-cyan-500/50 outline-none font-mono text-xs" />
@@ -302,26 +297,33 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                         </div>
                       </div>
 
-                      {/* Multi-Image Gallery Manager */}
-                      <div className="p-8 bg-slate-950/50 border border-white/5 rounded-[2rem] space-y-6">
-                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest block">Media Assets (Showcase Gallery)</label>
-                        <div className="space-y-3">
-                          {editingProject.images.map((img, idx) => (
-                            <div key={idx} className="flex gap-4 items-center">
-                              <div className="w-12 h-9 bg-slate-900 rounded-lg shrink-0 border border-white/5 overflow-hidden">
-                                {img && <img src={img} className="w-full h-full object-cover" alt="" />}
-                              </div>
-                              <input 
-                                type="text" 
-                                value={img} 
-                                onChange={e => updateImageNode(idx, e.target.value)} 
-                                placeholder="https://endpoint-url.com/image.jpg"
-                                className="flex-grow bg-slate-950 border border-white/5 rounded-xl p-4 text-xs text-slate-400 font-mono" 
-                              />
-                              <button onClick={() => removeImageNode(idx)} className="p-3 text-slate-800 hover:text-red-500 transition-all"><Trash2 size={16} /></button>
+                      <div className="space-y-6">
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">System Showcase Images (Multiple)</label>
+                        <div className="flex gap-4">
+                          <input 
+                            type="text" 
+                            placeholder="Append Image URL (HTTPS)..." 
+                            value={newImageUrl} 
+                            onChange={e => setNewImageUrl(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && addImage()}
+                            className="flex-grow bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-mono text-xs"
+                          />
+                          <button onClick={addImage} className="px-8 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-cyan-400 transition-all flex items-center gap-2">
+                            <Plus size={16} /> Append
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-4">
+                          {(editingProject.images || []).map((img, idx) => (
+                            <div key={idx} className="relative group aspect-video rounded-xl overflow-hidden border border-white/10 bg-slate-950">
+                              <img src={img} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all" />
+                              <button 
+                                onClick={() => removeImage(idx)}
+                                className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                              >
+                                <Trash2 size={12} />
+                              </button>
                             </div>
                           ))}
-                          <button onClick={addImageNode} className="w-full py-4 border border-dashed border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-700 hover:text-cyan-500 hover:border-cyan-500/30 transition-all">+ Append Media Node</button>
                         </div>
                       </div>
 
@@ -344,31 +346,13 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                           </button>
                         </div>
                         <div className="relative group/raw">
-                          <div className="absolute top-4 right-4 text-[8px] font-mono text-slate-700 uppercase tracking-widest pointer-events-none group-hover/raw:text-emerald-500/50 transition-colors">PRESERVE_WHITESPACE: ON</div>
                           <textarea 
                             value={editingProject.architectureImpact} 
                             onChange={e => setEditingProject({...editingProject, architectureImpact: e.target.value})} 
-                            placeholder="Input detailed architecture overview. Every manual line break is preserved 1:1." 
-                            style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}
+                            placeholder="Input detailed architecture overview..." 
+                            style={{ whiteSpace: 'pre-wrap' }}
                             className="w-full h-[32rem] bg-slate-950 border border-white/5 rounded-2xl p-8 text-slate-300 font-medium leading-relaxed outline-none focus:border-cyan-500/30 resize-none overflow-y-auto custom-scrollbar" 
                           />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-10">
-                        <div className="p-10 bg-slate-950 rounded-[2rem] border border-white/5 space-y-6">
-                          <h4 className="text-white font-black uppercase tracking-widest text-[10px] flex items-center gap-3">
-                            <Activity className="text-cyan-500" size={16} /> Scale Strategy
-                          </h4>
-                          <input type="text" placeholder="Strategy Title" value={editingProject.scaleStrategyTitle || ''} onChange={e => setEditingProject({...editingProject, scaleStrategyTitle: e.target.value})} className="w-full bg-slate-900/50 border border-white/5 rounded-xl p-4 text-white font-bold outline-none text-sm" />
-                          <textarea placeholder="Technical details..." value={editingProject.scaleStrategyDescription || ''} onChange={e => setEditingProject({...editingProject, scaleStrategyDescription: e.target.value})} className="w-full h-48 bg-slate-900/50 border border-white/5 rounded-xl p-4 text-slate-400 text-xs outline-none resize-none leading-relaxed" />
-                        </div>
-                        <div className="p-10 bg-slate-950 rounded-[2rem] border border-white/5 space-y-6">
-                          <h4 className="text-white font-black uppercase tracking-widest text-[10px] flex items-center gap-3">
-                            <Zap className="text-cyan-500" size={16} /> Latency Profile
-                          </h4>
-                          <input type="text" placeholder="Performance Title" value={editingProject.latencyProfileTitle || ''} onChange={e => setEditingProject({...editingProject, latencyProfileTitle: e.target.value})} className="w-full bg-slate-900/50 border border-white/5 rounded-xl p-4 text-white font-bold outline-none text-sm" />
-                          <textarea placeholder="Inference dynamics..." value={editingProject.latencyProfileDescription || ''} onChange={e => setEditingProject({...editingProject, latencyProfileDescription: e.target.value})} className="w-full h-48 bg-slate-900/50 border border-white/5 rounded-xl p-4 text-slate-400 text-xs outline-none resize-none leading-relaxed" />
                         </div>
                       </div>
                     </div>
@@ -388,11 +372,11 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                               value={newTag} 
                               onChange={e => setNewTag(e.target.value)}
                               onKeyDown={e => e.key === 'Enter' && addTechWord()}
-                              placeholder="Append Protocol (e.g. AWS, ARM, SolidWorks)..." 
+                              placeholder="Append Protocol (e.g. JWT, Docker)..." 
                               className="w-full bg-slate-900 border border-white/10 rounded-xl p-5 pl-14 text-white outline-none focus:border-cyan-500/50 transition-all font-mono text-sm" 
                             />
                           </div>
-                          <button onClick={addTechWord} className="px-10 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-cyan-400 transition-all">Append Word</button>
+                          <button onClick={addTechWord} className="px-10 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-cyan-400 transition-all">Append Node</button>
                         </div>
                         <div className="flex flex-wrap gap-4">
                           {editingProject.techStack.map(word => (
@@ -414,22 +398,22 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                         <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-4">
                           <Server className="text-cyan-400" size={24} /> Infrastructure Matrix
                         </h3>
-                        <button onClick={addInfraNode} className="px-6 py-3 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-white hover:text-black transition-all">+ New Parameter</button>
+                        <button onClick={addInfraNode} className="px-6 py-3 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-white hover:text-black transition-all">+ New Matrix Entry</button>
                       </div>
                       <div className="space-y-4">
-                        {editingProject.deploymentSpecs.map((spec, i) => (
+                        {(editingProject.deploymentSpecs || []).map((spec, i) => (
                           <div key={i} className="flex items-center gap-6 p-6 bg-slate-950 border border-white/5 rounded-2xl group hover:border-white/10 transition-all">
                             <div className="shrink-0 p-3 bg-slate-900 rounded-xl text-slate-700"><HardDrive size={18} /></div>
                             <input 
                               type="text" 
-                              placeholder="Label (e.g. Node Host)" 
+                              placeholder="Parameter" 
                               value={spec.label} 
                               onChange={e => updateInfraNode(i, 'label', e.target.value)} 
                               className="w-48 bg-slate-900 border border-white/5 rounded-xl p-4 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-cyan-500/30" 
                             />
                             <input 
                               type="text" 
-                              placeholder="Value (e.g. AWS EC2)" 
+                              placeholder="Value" 
                               value={spec.value} 
                               onChange={e => updateInfraNode(i, 'value', e.target.value)} 
                               className="flex-grow bg-slate-900 border border-white/5 rounded-xl p-4 text-[10px] font-mono text-cyan-400 outline-none focus:border-cyan-500/30" 
@@ -443,14 +427,14 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
 
                   {activeTab === 'metadata' && (
                     <div className="space-y-12 animate-in fade-in duration-500">
-                      <h3 className="text-white font-black uppercase tracking-tight text-xl">Registry Metadata</h3>
+                      <h3 className="text-white font-black uppercase tracking-tight text-xl">Discovery Registry Meta</h3>
                       <div className="space-y-10">
                         <div className="space-y-4">
                           <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Meta Title Override</label>
                           <input type="text" value={editingProject.metaTitle || ''} onChange={e => setEditingProject({...editingProject, metaTitle: e.target.value})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none font-bold" />
                         </div>
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Meta Description Index</label>
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Meta Description Entry</label>
                           <textarea value={editingProject.metaDescription || ''} onChange={e => setEditingProject({...editingProject, metaDescription: e.target.value})} className="w-full h-32 bg-slate-950 border border-white/5 rounded-xl p-6 text-slate-400 focus:border-cyan-500/50 outline-none resize-none leading-relaxed" />
                         </div>
                       </div>
