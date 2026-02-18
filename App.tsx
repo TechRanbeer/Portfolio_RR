@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Briefcase, FileText, Award, LogOut, Loader2, MessageSquare, LayoutDashboard
+  Menu, X, LogOut, Loader2, LayoutDashboard
 } from 'lucide-react';
 
 // Pages
@@ -108,12 +107,9 @@ const App: React.FC = () => {
       
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isHome ? 'h-24' : 'h-20 bg-slate-950/80 backdrop-blur-xl border-b border-white/5'}`}>
         <div className="max-w-7xl mx-auto px-6 h-full flex justify-between items-center">
-          <Link to="/" className="flex flex-col group">
-            <span className="text-white font-extrabold text-lg uppercase tracking-tight leading-none">
-              {siteConfig?.logo_line1 || 'Ranbeer'}
-            </span>
-            <span className="text-cyan-500 font-medium text-[11px] uppercase tracking-[0.2em] leading-tight">
-              {siteConfig?.logo_line2 || 'Raja'}
+          <Link to="/" className="flex items-center">
+            <span className="text-white font-black text-2xl uppercase tracking-tighter leading-none">
+              RANBEER<span className="text-cyan-500">RAJA</span>
             </span>
           </Link>
 
@@ -122,7 +118,7 @@ const App: React.FC = () => {
               <Link 
                 key={l.path} 
                 to={l.path} 
-                className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-premium hover:text-white ${location.pathname === l.path ? 'text-white' : 'text-slate-500'}`}
+                className={`text-[10px] font-black uppercase tracking-[0.2em] transition-premium hover:text-white ${location.pathname === l.path ? 'text-white border-b-2 border-cyan-500 pb-1' : 'text-slate-500'}`}
               >
                 {l.name}
               </Link>
@@ -136,17 +132,17 @@ const App: React.FC = () => {
           </div>
 
           <button className="md:hidden text-white p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </nav>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {mobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, x: 20 }} 
+            initial={{ opacity: 0, x: '100%' }} 
             animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: 20 }} 
+            exit={{ opacity: 0, x: '100%' }} 
             className="fixed inset-0 z-40 bg-slate-950 flex flex-col justify-center items-center space-y-8 md:hidden p-6"
           >
             {navLinks.map((l) => (
@@ -154,17 +150,17 @@ const App: React.FC = () => {
                 key={l.path} 
                 to={l.path} 
                 onClick={() => setMobileMenuOpen(false)} 
-                className="text-2xl font-black uppercase tracking-widest text-white hover:text-cyan-400"
+                className="text-4xl font-black uppercase tracking-tighter text-white hover:text-cyan-400"
               >
                 {l.name}
               </Link>
             ))}
             {isAdmin && (
-              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-cyan-400 text-xl font-bold uppercase tracking-widest">
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-cyan-400 text-2xl font-black uppercase tracking-tighter">
                 Dashboard
               </Link>
             )}
-            <button onClick={() => setMobileMenuOpen(false)} className="mt-12 text-slate-500"><X size={32} /></button>
+            <button onClick={() => setMobileMenuOpen(false)} className="mt-12 text-slate-500"><X size={48} /></button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -189,23 +185,23 @@ const App: React.FC = () => {
         </Routes>
       </main>
 
-      <footer className="py-20 border-t border-white/5 bg-slate-950/50">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+      <footer className="py-20 border-t border-white/5 bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex flex-col items-center md:items-start">
-            <span className="text-white font-black uppercase tracking-tighter text-lg">
-              {siteConfig?.logo_line1} {siteConfig?.logo_line2}
+            <span className="text-white font-black text-2xl uppercase tracking-tighter">
+              RANBEER<span className="text-cyan-500">RAJA</span>
             </span>
-            <span className="text-[10px] text-slate-600 font-mono uppercase tracking-[0.3em] mt-1">
-              Building the physical & digital frontier
+            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em] mt-2">
+              Engineering the Physical & Digital Frontier
             </span>
           </div>
-          <div className="flex space-x-8 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-            <a href={siteConfig?.social_links.github} className="hover:text-white transition-premium">GitHub</a>
-            <a href={siteConfig?.social_links.linkedin} className="hover:text-white transition-premium">LinkedIn</a>
+          <div className="flex space-x-12 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <a href={siteConfig?.social_links.github} className="hover:text-white transition-premium" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href={siteConfig?.social_links.linkedin} className="hover:text-white transition-premium" target="_blank" rel="noopener noreferrer">LinkedIn</a>
             <a href={`mailto:${siteConfig?.contact_email}`} className="hover:text-white transition-premium">Email</a>
           </div>
-          <p className="text-[9px] font-mono text-slate-700">
-            &copy; {new Date().getFullYear()} REPOSITORY SYSTEM
+          <p className="text-[11px] font-mono text-slate-400 font-medium uppercase tracking-widest">
+            &copy; 2026 RANBEER RAJA
           </p>
         </div>
       </footer>
