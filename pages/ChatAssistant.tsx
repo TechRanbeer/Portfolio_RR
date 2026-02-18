@@ -27,7 +27,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
     if (messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: "Hi! I'm Ranbeer's AI Assistant. I can tell you about his projects, skills, or even just what he's been learning lately. What can I help you find today?",
+        content: "Identity verified. I am Ranbeer's Personal Engineering Assistant. Query my nodes for technical specifications or project archives.",
         timestamp: Date.now()
       }]);
     }
@@ -43,22 +43,32 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
     setInput('');
     setIsTyping(true);
 
-    const history = messages.map(m => ({
-      role: m.role === 'user' ? 'user' as const : 'model' as const,
-      parts: [{ text: m.content }]
-    }));
+    try {
+      const history = messages.map(m => ({
+        role: m.role === 'user' ? 'user' as const : 'model' as const,
+        parts: [{ text: m.content }]
+      }));
 
-    const aiResponse = await geminiService.generatePortfolioResponse(input, history, projects, blogs);
+      const aiResponse = await geminiService.generatePortfolioResponse(currentInput, history, projects, blogs);
 
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: aiResponse || "I'm having a bit of trouble thinking right now. Could you ask again?",
-      timestamp: Date.now()
-    }]);
-    setIsTyping(false);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: aiResponse || "PROTOCOL_NULL: Signal processed with no output.",
+        timestamp: Date.now()
+      }]);
+    } catch (err) {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "SIGNAL_FAULT: Connection timeout. Recalibrate and try again.",
+        timestamp: Date.now()
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const copyToClipboard = (text: string, index: number) => {
@@ -67,7 +77,6 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  // Simple renderer to handle **bold** text as requested
   const renderFormattedContent = (content: string) => {
     const parts = content.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
@@ -79,10 +88,10 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
   };
 
   const suggestions = [
-    "What projects has Ranbeer worked on?",
-    "What's Ranbeer's tech stack?",
-    "Is Ranbeer available for freelance?",
-    "Tell me about the Raspberry Pi 5 NAS"
+    "List technical projects",
+    "Current tech stack?",
+    "Raspberry Pi 5 NAS specs",
+    "Availability status?"
   ];
 
   return (
@@ -95,7 +104,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
             className="text-4xl font-black text-white flex items-center tracking-tighter uppercase"
           >
             <Sparkles className="text-cyan-400 mr-3 animate-pulse" size={32} />
-            Ranbeer <span className="text-cyan-400 ml-2">AI</span>
+            Terminal <span className="text-cyan-400 ml-2">Assistance</span>
           </motion.h1>
         </div>
       </div>
@@ -106,7 +115,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
         <div className="px-8 py-4 bg-slate-950/40 border-b border-white/5 flex items-center justify-between relative z-10 backdrop-blur-md">
           <div className="flex items-center gap-3">
              <Terminal size={14} className="text-cyan-500" />
-             <span className="font-mono text-[9px] text-slate-500 uppercase tracking-[0.3em]">Neural_Link_Established</span>
+             <span className="font-mono text-[9px] text-slate-500 uppercase tracking-[0.3em]">Status: Signal_Stable</span>
           </div>
         </div>
 
@@ -184,24 +193,24 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ projects, blogs }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Query the engineering core..."
-              className="w-full bg-slate-900/50 border border-white/10 rounded-[1.5rem] px-8 py-5 pr-16 text-slate-200 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/10 transition-all placeholder:text-slate-600 font-medium"
+              placeholder="Initialize neural query..."
+              className="w-full bg-slate-900/50 border border-white/10 rounded-[1.5rem] px-8 py-5 pr-16 text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-all font-medium"
             />
             <button 
               onClick={handleSend}
               disabled={!input.trim() || isTyping}
-              className="absolute right-3 p-4 bg-cyan-600 text-white rounded-xl hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-700 transition-all shadow-lg hover:scale-105 active:scale-95 group"
+              className="absolute right-3 p-4 bg-cyan-600 text-white rounded-xl hover:bg-cyan-500 disabled:bg-slate-800 transition-all shadow-lg active:scale-95 group"
             >
-              {isTyping ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
+              {isTyping ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="group-hover:translate-x-0.5" />}
             </button>
           </div>
           <div className="flex flex-wrap gap-3">
-            <span className="text-[10px] text-slate-600 font-black uppercase tracking-[0.2em] self-center mr-2">Quick_Links:</span>
+            <span className="text-[10px] text-slate-600 font-black uppercase tracking-[0.2em] self-center mr-2">Macros:</span>
             {suggestions.map(s => (
               <button 
                 key={s} 
                 onClick={() => setInput(s)}
-                className="text-[10px] font-black uppercase tracking-widest bg-slate-900 border border-white/5 hover:border-cyan-500/30 hover:bg-slate-800 text-slate-500 hover:text-cyan-400 px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95"
+                className="text-[10px] font-black uppercase tracking-widest bg-slate-900 border border-white/5 hover:border-cyan-500/30 text-slate-500 hover:text-cyan-400 px-4 py-2 rounded-xl transition-all active:scale-95"
               >
                 {s}
               </button>

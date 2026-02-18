@@ -24,16 +24,16 @@ export class GeminiService {
   ) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    // SURGICAL CONTEXT: Only send essential technical headers for maximum speed
-    const projectsSummary = projects.slice(0, 15).map(p => 
-      `NODE: ${p.title}\nPROTOCOLS: ${p.techStack.join(', ')}\nABSTRACT: ${p.description}\nARCH: ${p.architectureImpact || 'SECURE_VOID'}`
+    // OPTIMIZATION: Send a tighter context window for maximum speed in production
+    const projectsSummary = projects.slice(0, 10).map(p => 
+      `NODE: ${p.title}\nTECH: ${p.techStack.join(', ')}\nABSTRACT: ${p.description}\nARCH: ${p.architectureImpact || 'SECURE_VAULT'}`
     ).join('\n\n');
 
     const contextPrompt = SYSTEM_PROMPT.replace('{{PROJECTS_SUMMARY}}', projectsSummary);
 
     try {
-      // KEEP HISTORY LIGHT: Only last 6 messages to reduce token overhead and latency
-      const limitedHistory = history.slice(-6);
+      // LIMIT HISTORY: Only last 5 turns to keep the payload lightweight
+      const limitedHistory = history.slice(-5);
 
       const response: GenerateContentResponse = await ai.models.generateContent({
         model: this.modelName,
@@ -43,24 +43,23 @@ export class GeminiService {
         ],
         config: {
           systemInstruction: contextPrompt,
-          temperature: 0.2, // Low for faster, more predictable output
-          topP: 0.85,
-          topK: 40,
-          maxOutputTokens: 1024
+          temperature: 0.1, // Near-deterministic for maximum speed
+          topP: 0.9,
+          topK: 20,
+          maxOutputTokens: 800
         }
       });
 
-      return response.text || "PROTOCOL_NULL: Re-query signal.";
+      return response.text || "PROTOCOL_SIGNAL_EMPTY: Re-query core.";
     } catch (error) {
       console.error("AI_INFERENCE_FAULT:", error);
-      return "SIGNAL_LOST: Connection to the engineering core experienced a high-latency timeout. Retrying initialization recommended.";
+      return "SIGNAL_INTERFERENCE: Connection to the engineering core is unstable. Attempting recalibration. Please retry signal broadcast.";
     }
   }
 
   async generateTechnicalSummary(project: Project) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Perform a high-level technical audit and synthesis for the system node: ${project.title}. 
-    Focus exclusively on architectural integrity and scalability. Provide a formal abstract.`;
+    const prompt = `Synthesize technical abstract for: ${project.title}. Focus on architecture.`;
     
     try {
       const response = await ai.models.generateContent({ 
@@ -68,9 +67,9 @@ export class GeminiService {
         contents: prompt,
         config: { temperature: 0.1 }
       });
-      return response.text || "TECHNICAL_ABSTRACT_UNAVAILABLE";
+      return response.text || "ABSTRACT_NODE_NULL";
     } catch (e) {
-      return "SYNTHESIS_FAULT: Manual override required.";
+      return "SYNTHESIS_FAULT: Manual override recommended.";
     }
   }
 }

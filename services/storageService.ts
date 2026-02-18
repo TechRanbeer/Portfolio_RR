@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { Project, Certificate, AnalyticsEvent, AuditLog, Blog, Experience, SiteConfig, MainTag, TechStackTag } from '../types';
 import { INITIAL_PROJECTS, INITIAL_BLOGS, INITIAL_EXPERIENCE, INITIAL_SITE_CONFIG } from '../constants';
@@ -54,7 +55,6 @@ const mapProjectFromDb = (d: any): Project => ({
   updatedAt: d.updated_at,
   aiContext: d.ai_context,
   lastAiSync: d.last_ai_sync,
-  // Technical Deep Dive
   architectureImpact: d.architecture_impact,
   scaleStrategyTitle: d.scale_strategy_title,
   scaleStrategyDescription: d.scale_strategy_description,
@@ -97,7 +97,6 @@ export const storageService = {
   saveProject: async (project: Project) => {
     if (!supabase) throw new Error("Supabase connection missing.");
 
-    // Update main project entry
     const { error: projectError } = await supabase.from('projects').upsert({
       id: project.id,
       slug: project.slug,
@@ -123,7 +122,6 @@ export const storageService = {
       meta_title: project.metaTitle,
       meta_description: project.metaDescription,
       keywords: project.keywords,
-      // Technical Deep Dive
       architecture_impact: project.architectureImpact,
       scale_strategy_title: project.scaleStrategyTitle,
       scale_strategy_description: project.scaleStrategyDescription,
@@ -133,15 +131,27 @@ export const storageService = {
 
     if (projectError) throw projectError;
 
-    // Sync tech stack relation
-    await supabase.from('project_tech_stack').delete().eq('project_id', project.id);
+    // Fix: Ensure all tags exist in the master tech_stack_tags table before linking
     if (project.techStack.length > 0) {
+      for (const tagName of project.techStack) {
+        if (!tagName.trim()) continue;
+        await supabase.from('tech_stack_tags').upsert(
+          { name: tagName.trim() }, 
+          { onConflict: 'name' }
+        );
+      }
+
       const { data: tagData } = await supabase.from('tech_stack_tags').select('id, name').in('name', project.techStack);
+      
+      await supabase.from('project_tech_stack').delete().eq('project_id', project.id);
+      
       if (tagData && tagData.length > 0) {
         await supabase.from('project_tech_stack').insert(
           tagData.map(t => ({ project_id: project.id, tech_stack_id: t.id }))
         );
       }
+    } else {
+      await supabase.from('project_tech_stack').delete().eq('project_id', project.id);
     }
 
     // Sync specs
@@ -207,7 +217,6 @@ export const storageService = {
   saveCertificate: async (cert: Certificate) => {
     if (!supabase) throw new Error("Supabase connection missing.");
     
-    // Explicit date formatting for Postgres compatibility (YYYY-MM-DD)
     const formatSqlDate = (dateStr?: string) => {
       if (!dateStr) return null;
       try {
