@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Trash2, Star, ChevronLeft, X, Loader2, Save, Layers, 
   Globe, Command, Zap, Activity, Cpu, Server, Terminal, Tag, 
-  Image as ImageIcon, Link as LinkIcon, Github, AlignLeft, Shield, HardDrive
+  Image as ImageIcon, Link as LinkIcon, Github, AlignLeft, Shield, HardDrive,
+  BarChart3, ActivitySquare
 } from 'lucide-react';
 import { Project, ProjectCategory, ProjectDeploymentSpec } from '../../types';
 import { Link } from 'react-router-dom';
@@ -20,7 +21,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'base' | 'architecture' | 'protocols' | 'infrastructure' | 'metadata'>('base');
+  const [activeTab, setActiveTab] = useState<'base' | 'architecture' | 'performance' | 'protocols' | 'infrastructure' | 'metadata'>('base');
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [newTag, setNewTag] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -249,10 +250,11 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                 <div className="w-72 border-r border-white/5 bg-slate-950/40 p-8 flex flex-col gap-3">
                   {[
                     { id: 'base', label: 'Identity', icon: <Layers size={14} /> },
-                    { id: 'architecture', label: 'System Architecture', icon: <AlignLeft size={14} /> },
+                    { id: 'architecture', label: 'Architecture', icon: <AlignLeft size={14} /> },
+                    { id: 'performance', label: 'Performance Deep Dive', icon: <ActivitySquare size={14} /> },
                     { id: 'protocols', label: 'Protocol Stack', icon: <Cpu size={14} /> },
                     { id: 'infrastructure', label: 'Infra Matrix', icon: <Server size={14} /> },
-                    { id: 'metadata', label: 'System Metadata', icon: <Globe size={14} /> }
+                    { id: 'metadata', label: 'Metadata', icon: <Globe size={14} /> }
                   ].map(tab => (
                     <button 
                       key={tab.id} 
@@ -353,6 +355,46 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                             style={{ whiteSpace: 'pre-wrap' }}
                             className="w-full h-[32rem] bg-slate-950 border border-white/5 rounded-2xl p-8 text-slate-300 font-medium leading-relaxed outline-none focus:border-cyan-500/30 resize-none overflow-y-auto custom-scrollbar" 
                           />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'performance' && (
+                    <div className="space-y-12 animate-in fade-in duration-500">
+                      <div className="grid grid-cols-1 gap-12">
+                        {/* Scale Strategy Group */}
+                        <div className="p-8 bg-slate-950/50 border border-white/5 rounded-[2rem] space-y-8">
+                           <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-4">
+                            <BarChart3 className="text-cyan-500" size={20} /> Scale Strategy
+                          </h3>
+                          <div className="space-y-6">
+                            <div className="space-y-4">
+                              <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Strategy Label</label>
+                              <input type="text" value={editingProject.scaleStrategyTitle || ''} onChange={e => setEditingProject({...editingProject, scaleStrategyTitle: e.target.value})} placeholder="e.g. Distributed Node Expansion" className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-bold" />
+                            </div>
+                            <div className="space-y-4">
+                              <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Strategy Abstract</label>
+                              <textarea value={editingProject.scaleStrategyDescription || ''} onChange={e => setEditingProject({...editingProject, scaleStrategyDescription: e.target.value})} placeholder="Technical details of scaling logic..." className="w-full h-32 bg-slate-950 border border-white/5 rounded-xl p-6 text-slate-400 focus:border-cyan-500/50 outline-none resize-none transition-all text-sm leading-relaxed" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Latency Profile Group */}
+                        <div className="p-8 bg-slate-950/50 border border-white/5 rounded-[2rem] space-y-8">
+                           <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-4">
+                            <Zap className="text-cyan-500" size={20} /> Latency Profile
+                          </h3>
+                          <div className="space-y-6">
+                            <div className="space-y-4">
+                              <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Latency Signature</label>
+                              <input type="text" value={editingProject.latencyProfileTitle || ''} onChange={e => setEditingProject({...editingProject, latencyProfileTitle: e.target.value})} placeholder="e.g. Sub-200ms Inference" className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-bold" />
+                            </div>
+                            <div className="space-y-4">
+                              <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Performance Specifications</label>
+                              <textarea value={editingProject.latencyProfileDescription || ''} onChange={e => setEditingProject({...editingProject, latencyProfileDescription: e.target.value})} placeholder="Dynamic latency benchmarks and optimization paths..." className="w-full h-32 bg-slate-950 border border-white/5 rounded-xl p-6 text-slate-400 focus:border-cyan-500/50 outline-none resize-none transition-all text-sm leading-relaxed" />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

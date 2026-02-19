@@ -22,7 +22,6 @@ export class GeminiService {
     projects: Project[],
     blogs: Blog[]
   ) {
-    // Initializing with named parameter as required by SDK
     // The API key is obtained exclusively from process.env.API_KEY per project protocols.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -36,42 +35,63 @@ export class GeminiService {
     try {
       /**
        * CRITICAL ARCHITECTURAL REQUIREMENT: 
-       * Gemini API multi-turn history must strictly start with a 'user' turn.
-       * We filter the provided history to strip leading assistant greetings
-       * and ensure valid alternating turn order.
+       * Gemini API multi-turn history must strictly alternate roles: user, model, user, model...
+       * The history passed to chats.create MUST end with a 'model' turn because 
+       * the next 'user' turn is provided via sendMessage().
        */
       let chatHistory = [...history].filter(h => h.parts[0].text.trim() !== "");
       
-      // Trim history until it starts with a 'user' turn to avoid 400 Bad Request errors
+      // 1. Ensure history starts with 'user'
       while (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
         chatHistory.shift();
       }
       
-      // Maintain context while optimizing for latency and token cost
-      chatHistory = chatHistory.slice(-8);
+      // 2. The provided 'userMessage' is often already at the end of 'history' in React state.
+      // We must pop it off if it exists to ensure chatHistory ends with a 'model' turn.
+      if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+        chatHistory.pop();
+      }
 
-      // Using the dedicated Chat API for superior turn management and state consistency
+      // 3. Ensure the history is strictly alternating (double check)
+      const validHistory = [];
+      for (let i = 0; i < chatHistory.length; i++) {
+        if (i === 0) {
+          if (chatHistory[i].role === 'user') validHistory.push(chatHistory[i]);
+        } else {
+          if (chatHistory[i].role !== validHistory[validHistory.length - 1].role) {
+            validHistory.push(chatHistory[i]);
+          }
+        }
+      }
+
+      // Maintain context while optimizing for latency
+      const finalHistory = validHistory.slice(-6);
+
+      // Initialize Chat session
       const chat = ai.chats.create({
         model: this.modelName,
         config: {
           systemInstruction: contextPrompt,
-          temperature: 0.25,
-          topP: 0.9,
-          topK: 40,
+          temperature: 0.3,
+          topP: 0.95,
           maxOutputTokens: 1024
         },
-        history: chatHistory
+        history: finalHistory
       });
 
-      // sendMessage handles the runtime injection of the new user prompt into the session history
+      // sendMessage correctly appends the new user turn to the validated history
       const response: GenerateContentResponse = await chat.sendMessage({
         message: userMessage
       });
 
       return response.text || "PROTOCOL_NULL: Re-query signal.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI_INFERENCE_FAULT:", error);
-      return "SIGNAL_LOST: Connection to the engineering core experienced a high-latency timeout or validation fault. Ensure history starts with a user turn.";
+      // Detailed logging for production debugging
+      if (error?.message?.includes('400')) {
+        return "SIGNAL_VALIDATION_FAULT: The engineering core rejected the turn order. Retrying sequence...";
+      }
+      return "SIGNAL_LOST: Connection to the engineering core failed. Please re-initiate sequence.";
     }
   }
 
