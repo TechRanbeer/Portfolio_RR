@@ -330,8 +330,13 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Abstract Overview</label>
-                        <textarea value={editingProject.description} onChange={e => setEditingProject({...editingProject, description: e.target.value})} className="w-full h-32 bg-slate-950 border border-white/5 rounded-xl p-6 text-slate-400 focus:border-cyan-500/50 outline-none resize-none transition-all text-sm leading-relaxed" />
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Abstract Overview (Short)</label>
+                        <textarea value={editingProject.description} onChange={e => setEditingProject({...editingProject, description: e.target.value})} className="w-full h-24 bg-slate-950 border border-white/5 rounded-xl p-6 text-slate-400 focus:border-cyan-500/50 outline-none resize-none transition-all text-sm leading-relaxed" />
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Detailed Description (Long)</label>
+                        <textarea value={editingProject.longDescription} onChange={e => setEditingProject({...editingProject, longDescription: e.target.value})} className="w-full h-48 bg-slate-950 border border-white/5 rounded-xl p-6 text-slate-400 focus:border-cyan-500/50 outline-none resize-none transition-all text-sm leading-relaxed" />
                       </div>
                     </div>
                   )}

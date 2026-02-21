@@ -21,6 +21,7 @@ import Resume from './pages/Resume';
 import Certificates from './pages/Certificates';
 import Thanks from './pages/Thanks';
 import CloudBackground from './components/ui/CloudBackground';
+import { LoadingScreen } from './components/ui/LoadingScreen';
 
 // Services
 import { Project, Blog, Experience, SiteConfig, Certificate } from './types';
@@ -51,6 +52,7 @@ const App: React.FC = () => {
   const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingSequenceComplete, setLoadingSequenceComplete] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,6 +92,10 @@ const App: React.FC = () => {
     setIsAdmin(false);
     navigate('/');
   };
+
+  if (!loadingSequenceComplete) {
+    return <LoadingScreen onComplete={() => setLoadingSequenceComplete(true)} />;
+  }
 
   if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-cyan-500" size={32} /></div>;
 

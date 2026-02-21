@@ -9,6 +9,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Project, SiteConfig } from '../types';
 import Hero from '../components/ui/animated-shader-hero';
 import { useForm, ValidationError } from '@formspree/react';
+import { Capabilities } from '../components/ui/Capabilities';
+import { CareerStats } from '../components/ui/CareerStats';
 
 interface HomeProps {
   projects: Project[];
@@ -230,11 +232,7 @@ const Home: React.FC<HomeProps> = ({ projects, config }) => {
               </div>
 
               {/* Status Indicator Bar */}
-              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 group-hover:bg-emerald-400 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                  <span className="text-[9px] font-black text-slate-700 group-hover:text-slate-500 uppercase tracking-widest">Active System</span>
-                </div>
+              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-end">
                 <div className="w-12 h-0.5 bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full bg-cyan-500/50 w-0 group-hover:w-full transition-all duration-700"></div>
                 </div>
@@ -304,6 +302,10 @@ const Home: React.FC<HomeProps> = ({ projects, config }) => {
           </motion.div>
         </div>
       </section>
+
+      {/* System Capabilities & Performance Dashboard */}
+      <Capabilities mode="ai" />
+      <CareerStats mode="ai" />
 
       {/* CTA Section - Professional & High Impact */}
       <section className="py-60 relative">

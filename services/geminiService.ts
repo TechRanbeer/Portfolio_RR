@@ -13,15 +13,14 @@ KNOWLEDGE BASE:
 `;
 
 export class GeminiService {
-  // FIX: 'gemini-3-flash-preview' does not exist. Using a valid model name.
-  private modelName = 'gemini-2.0-flash';
+  private modelName = 'gemini-3-flash-preview';
 
   private getClient() {
-    // FIX: process.env does not work in Vite. Must use import.meta.env.
-    // Ensure your .env file has: VITE_API_KEY=your_key_here
-    const apiKey = import.meta.env.VITE_API_KEY;
+    // Priority: 1. Custom VITE_API_KEY, 2. Default GEMINI_API_KEY
+    const apiKey = import.meta.env.VITE_API_KEY || process.env.GEMINI_API_KEY;
+    
     if (!apiKey) {
-      throw new Error("VITE_API_KEY is not defined. Check your .env file.");
+      throw new Error("Gemini API Key is not defined. Please set VITE_API_KEY in your environment variables.");
     }
     return new GoogleGenAI({ apiKey });
   }
