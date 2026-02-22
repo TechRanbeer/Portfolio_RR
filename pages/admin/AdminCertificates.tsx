@@ -65,7 +65,7 @@ const AdminCertificates: React.FC<AdminCertProps> = ({ certificates, onUpdate })
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="max-w-7xl mx-auto px-6 pt-32 pb-16">
       <Link to="/admin" className="flex items-center text-slate-500 hover:text-white mb-12 font-black uppercase tracking-[0.2em] text-[10px]">
         <ChevronLeft size={16} className="mr-3" /> Dashboard Access
       </Link>

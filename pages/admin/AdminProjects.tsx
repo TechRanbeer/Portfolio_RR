@@ -148,7 +148,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="max-w-7xl mx-auto px-6 pt-32 pb-12">
       <div className="flex justify-between items-center mb-16">
         <div className="space-y-1">
           <h1 className="text-3xl font-black text-white uppercase tracking-tighter">System Registry</h1>
@@ -182,6 +182,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
               <tr>
                 <th className="px-8 py-6">Node Identifier</th>
                 <th className="px-8 py-6">Classification</th>
+                <th className="px-8 py-6">Status</th>
                 <th className="px-8 py-6 text-center">Featured</th>
                 <th className="px-8 py-6 text-right">Operations</th>
               </tr>
@@ -202,6 +203,11 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                   </td>
                   <td className="px-8 py-6">
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{p.category}</span>
+                  </td>
+                  <td className="px-8 py-6">
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${p.status === 'published' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 'text-amber-500 border-amber-500/20 bg-amber-500/5'}`}>
+                      {p.status}
+                    </span>
                   </td>
                   <td className="px-8 py-6 text-center">
                     <button onClick={async () => {
@@ -269,7 +275,7 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                 <div className="flex-grow overflow-y-auto p-12 custom-scrollbar bg-slate-900/10 space-y-16">
                   {activeTab === 'base' && (
                     <div className="space-y-12 animate-in fade-in duration-500">
-                      <div className="grid grid-cols-2 gap-10">
+                       <div className="grid grid-cols-2 gap-10">
                         <div className="space-y-4">
                           <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">System Name</label>
                           <input type="text" value={editingProject.title} onChange={e => setEditingProject({...editingProject, title: e.target.value, slug: e.target.value.toLowerCase().replace(/ /g, '-')})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-bold" />
@@ -279,6 +285,20 @@ const AdminProjects: React.FC<AdminProjectsProps> = ({ projects, onUpdate }) => 
                           <select value={editingProject.category} onChange={e => setEditingProject({...editingProject, category: e.target.value as ProjectCategory})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-black uppercase">
                             {Object.values(ProjectCategory).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                           </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-10">
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Deployment Status</label>
+                          <select value={editingProject.status} onChange={e => setEditingProject({...editingProject, status: e.target.value as 'published' | 'draft'})} className="w-full bg-slate-950 border border-white/5 rounded-xl p-5 text-white focus:border-cyan-500/50 outline-none transition-all font-black uppercase">
+                            <option value="published">Published (Visible to Public)</option>
+                            <option value="draft">Draft (Admin Only)</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-4 pt-10">
+                          <input type="checkbox" id="featured" checked={editingProject.featured} onChange={e => setEditingProject({...editingProject, featured: e.target.checked})} className="w-5 h-5 accent-cyan-500" />
+                          <label htmlFor="featured" className="text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer">Featured in Showcase</label>
                         </div>
                       </div>
 

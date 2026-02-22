@@ -32,7 +32,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ config, onUpdate }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto px-4 pt-32 pb-12">
       <Link to="/admin" className="flex items-center text-slate-500 hover:text-cyan-400 mb-8 font-black uppercase tracking-widest text-xs"><ChevronLeft size={20} className="mr-1" /> Dashboard</Link>
       <div className="flex justify-between items-center mb-12">
         <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Site Core Configuration</h1>

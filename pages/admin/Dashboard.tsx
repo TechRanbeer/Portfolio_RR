@@ -48,7 +48,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ projects }) => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="max-w-7xl mx-auto px-6 pt-32 pb-16">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
         <div className="space-y-4">
           <h1 className="text-5xl font-black text-white uppercase tracking-tighter">Command Center</h1>
